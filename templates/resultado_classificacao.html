@@ -1,0 +1,198 @@
+<script src="https://raw-dot-custom-elements.appspot.com/elvomka/eu-energy-label/1.0.3/webcomponentsjs/webcomponents-loader.js"></script>
+<link rel="import" href="https://raw.githubusercontent.com/arturkamimura/teste/main/eu-energy-label.html">
+<html style="background-color: hsl(0, 0%, 100%);">
+  
+</html>
+  
+<table>
+  <div style="margin-left:10px;margin-bottom: 3vh;width:100%;">
+      <img src="../static/img/pbe_logo.png" width="346" height="111" style="float:left;text-align: center;margin-left: 5vw;">
+      <span style="margin-right: 10px;margin-top: 15px;text-align: center;float:left;margin-left: 10vw;">
+    <span style="font-size: 50px;color:#000000;">Edificações Residenciais</span>
+    <br><span style="font-size: 25px;color:#6E6E6E;">Classificação da edificação em análise</span>
+
+      </span>
+    
+  </div>
+</table>
+
+<table>
+  <div style="width:400px;height:200px;margin-left: 2vw;margin-top: 200px; border: 6px solid #00adef;
+  border-radius: 15px;
+  padding: 20px;
+  " >
+    <h2 style="font-size: 1.2em;text-align: center;"> Classificação da envoltória da edificação</h2>
+    <eu-energy-label id="classe_envoltoria" style ="height: 100px;"
+    efficiency-classes="A,B,C,D,E"
+    >
+    </eu-energy-label> 
+  </div>
+
+
+
+  <div style="width:400px;height:200px;margin-left: 2vw;margin-top: 2vh; border: 6px solid #00adef;
+  border-radius: 15px;
+  padding: 20px">
+    <h2 style="font-size: 1.2em; text-align: center;"> Classificação do sistema de aquecimento de água</h2>
+    <eu-energy-label id="classe_AQ" style ="height: 100px;"
+    efficiency-classes="A,B,C,D,E"></eu-energy-label>
+  </div>
+
+  <div style="width:400px;height:200px;margin-left: 600px;margin-top: -520.5px; border: 6px solid #00ef6c;
+    border-radius: 15px;
+    padding: 20px;
+    " >
+    <h2 style="font-size: 1.2em; text-align: center;"> Classificação da Eficiência Energética da UH</h2>
+  <eu-energy-label id="classe_UH" style="height: 100px;"
+  efficiency-classes="A,B,C,D,E">
+  </eu-energy-label>
+  </div>
+</table>
+
+<script>
+
+</script>
+
+<div style="width:400px;height:200px;margin-left: 600px;margin-top:2vh; border: 6px solid #00ef6c;
+  border-radius: 15px;
+  padding: 20px">
+  <h2 style="font-size: 1.2em; text-align: center;"> Consumos da UH em energia primária</h2>
+  <span id ="consumo_UH_real"></span>
+  <span id ="consumo_aq_real"></span>
+  <span id ="consumo_UH_ref"></span>
+  <span id ="consumo_aq_ref"></span>
+  <script>
+     //* sistema de aquecimento de água:
+    sistema_aq = localStorage.tipo_aq;
+    aq_real_eletrica = localStorage.aq_real_eletrica;
+    aq_real_termica = localStorage.aq_real_termica;
+    aq_ref = localStorage.aq_ref;
+    dif_sistema_aq = Math.round((((parseFloat(aq_ref) * 1.6) - (parseFloat(aq_real_eletrica)*1.6) - (parseFloat(aq_real_termica) * 1.1))/ (parseFloat(aq_ref) * 1.6)) * 100,2)
+    
+    if(sistema_aq == 'com_acumulacao'){
+      if (dif_sistema_aq > 30){classificacao_sistema_aq = "A"}
+      else if (30 >= dif_sistema_aq > 20  ){classificacao_sistema_aq = "B"}
+      else if (20 >= dif_sistema_aq > 10){classificacao_sistema_aq = "C"}
+      else if (10 >= dif_sistema_aq > 0){classificacao_sistema_aq = "D"}
+      else {classificacao_sistema_aq = "E"}
+    }
+
+    else if(sistema_aq == 'sem_acumulacao'){
+    if (dif_sistema_aq > 21){classificacao_sistema_aq = "A"}
+    else if (21 >= dif_sistema_aq > 14  ){classificacao_sistema_aq = "B"}
+    else if (14 >= dif_sistema_aq > 7){classificacao_sistema_aq = "C"}
+    else if (7 >= dif_sistema_aq > 0){classificacao_sistema_aq = "D"}
+    else {classificacao_sistema_aq = "E"}
+    }
+
+    // inserindo informações para a envoltória:
+
+    geracao = localStorage.geracao;
+    resultado_envoltoria = localStorage.resultado_envoltoria;
+    c_resf = localStorage.CRESF_real;
+    c_aqueci = localStorage.CAQUE_real;
+    consumo_condicionamento = parseFloat(c_resf) + parseFloat(c_aqueci)
+    CgTR_ =  localStorage.Carga_resf_real;
+    CgTA_ = localStorage.Carga_aq_real;
+    carga_real = parseFloat(CgTR_) + parseFloat(CgTA_)
+    CgTR_ref = localStorage.Carga_resf_ref; 
+    CgTA_ref = localStorage.Carga_aq_ref;
+    carga_ref = parseFloat(CgTR_ref) + parseFloat(CgTA_ref)
+    PHFT_ = localStorage.PHFT_real;
+    PHFT_ref = localStorage.PHFT_ref;
+    TOMax = localStorage.TOMax;
+    TOMax_ref = localStorage.TOMax_ref;
+    TOMin = localStorage.TOMin;
+    TOMin_ref = localStorage.TOMin_ref;
+    contador_quartos = localStorage.quartos;
+    tipologia = localStorage.tipologia;
+    area_cond = localStorage.area_cond ;
+    cond_cob = localStorage.cond_cob;
+    cond_piso = localStorage.cond_piso;
+    zona_bioclimatica = localStorage.zona_bioclimatica;
+
+    // equipamentos = 2 moradores por dormitório
+    equipamentos = (44,6+(26,6*parseFloat(contador_quartos)*2))*12
+    ConsumoUH_real = Math.round(parseFloat(consumo_condicionamento)*1.6 + parseFloat(aq_real_termica)*1.1 + parseFloat(aq_real_eletrica*1.6) + parseFloat(equipamentos*1.6) ,2)
+    ConsumoUH_ref = Math.round(parseFloat(CgTR_ref/3.5)*1.6 + parseFloat(CgTA_ref/3.42)*1.6 + parseFloat(aq_ref*1.6) + parseFloat(equipamentos*1.6) ,2)
+
+
+    // classificação da envoltória da edificação:
+    console.log(ConsumoUH_real, ConsumoUH_ref)
+    if (resultado_envoltoria == "superior"){classificacao_envoltoria = "A"}
+    else if (resultado_envoltoria == "intermediario"){classificacao_envoltoria = "B"}
+    else if (resultado_envoltoria == "minimo"){classificacao_envoltoria = "C"}
+    else if (resultado_envoltoria == "minimo_d"){classificacao_envoltoria = "D"}
+    else {classificacao_envoltoria = "E"}
+
+    // classificacao da UH:
+
+    dif_UHS = parseFloat((ConsumoUH_ref-ConsumoUH_real)/(ConsumoUH_ref)*100)
+    console.log(dif_UHS)
+    if(sistema_aq ==  'com_acumulacao'){
+      if (zona_bioclimatica <= 3){
+        if (dif_UHS > 23){classificacao_UH = "A"}
+        else if (23 >= dif_UHS > 11.5  ){classificacao_UH = "B"}
+        else if (11.5 >= dif_UHS > 0){classificacao_UH = "C"}
+        else if (0 >= dif_UHS > -11.5){classificacao_UH = "D"}
+        else {classificacao_UH = "E"}
+      }
+
+      else if (6 >= zona_bioclimatica > 3){
+        if (dif_UHS > 26){classificacao_UH = "A"}
+        else if (26 >= dif_UHS > 13  ){classificacao_UH = "B"}
+        else if (13 >= dif_UHS > 0){classificacao_UH = "C"}
+        else if (0 >= dif_UHS > -13){classificacao_UH = "D"}
+        else {classificacao_UH = "E"}
+      }
+
+      else {
+        if (dif_UHS > 32){classificacao_UH = "A"}
+        else if (32 >= dif_UHS > 16  ){classificacao_UH = "B"}
+        else if (16 >= dif_UHS > 0){classificacao_UH = "C"}
+        else if (0 >= dif_UHS > -16){classificacao_UH = "D"}
+        else {classificacao_UH = "E"}
+      }
+    } 
+
+    else if(sistema_aq ==  'sem_acumulacao'){
+      if (zona_bioclimatica <= 3){
+        if (dif_UHS > 18){classificacao_UH = "A"}
+        else if (18 >= dif_UHS > 9  ){classificacao_UH = "B"}
+        else if (9 >= dif_UHS > 0){classificacao_UH = "C"}
+        else if (0 >= dif_UHS > -9){classificacao_UH = "D"}
+        else {classificacao_UH = "E"}
+      }
+
+      else if (6 >= zona_bioclimatica > 3){
+        if (dif_UHS > 23){classificacao_UH = "A"}
+        else if (23 >= dif_UHS > 11.5  ){classificacao_UH = "B"}
+        else if (11.5 >= dif_UHS > 0){classificacao_UH = "C"}
+        else if (0 >= dif_UHS > -11.5){classificacao_UH = "D"}
+        else {classificacao_UH = "E"}
+      }
+
+      else {
+        if (dif_UHS > 30){classificacao_UH = "A"}
+        else if (30 >= dif_UHS > 15  ){classificacao_UH = "B"}
+        else if (15 >= dif_UHS > 0){classificacao_UH = "C"}
+        else if (0 >= dif_UHS > -15){classificacao_UH = "D"}
+        else {classificacao_UH = "E"}
+      }
+    } 
+
+     // preenchimento dos consumos e classificações: 
+    
+    document.getElementById("classe_UH").outerHTML = "<eu-energy-label id=\"classe\" style=\"height: 100px;\" efficiency-classes=\"A,B,C,D,E\" selected-class="+classificacao_UH+">\n</eu-energy-label>"
+    document.getElementById("classe_AQ").outerHTML = "<eu-energy-label id=\"classe\" style=\"height: 100px;\" efficiency-classes=\"A,B,C,D,E\" selected-class="+classificacao_sistema_aq+">\n</eu-energy-label>"
+    document.getElementById("classe_envoltoria").outerHTML = "<eu-energy-label id=\"classe\" style=\"height: 100px;\" efficiency-classes=\"A,B,C,D,E\" selected-class="+classificacao_envoltoria+">\n</eu-energy-label>"
+    document.getElementById("consumo_UH_real").outerHTML = '<span id=\"consumo"> Consumo total da UH na condição real: '+ConsumoUH_real+' kWh/ano \n</span>'
+    document.getElementById("consumo_UH_ref").outerHTML = '<span id=\"consumo"> Consumo total da UH na ed. referência: '+ConsumoUH_ref+' kWh/ano \n</span>'
+    document.getElementById("consumo_aq_real").outerHTML = '<span id=\"consumo"> Aquecimento de água na condição real: '+(parseFloat(aq_real_termica)*1.1+parseFloat(aq_real_eletrica)*1.6)+' kWh/ano \n</span>'
+    document.getElementById("consumo_aq_ref").outerHTML = '<span id=\"consumo"> Aquecimento de água na ed. referência: '+parseFloat(aq_ref)*1.6+' kWh/ano \n</span>'
+  </script>
+</div>
+
+
+
+

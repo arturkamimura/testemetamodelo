@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Interface do metamodelo da INI-R</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" integrity="undefined" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style type="text/css">
+      
+      body {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+      }
+      
+      input, select {
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: 1vw;
+      }
+
+      .warning-div {
+        color: #ff0c05;
+        margin-left: 2vw;
+        display: none; 
+      }
+
+      #app-input, #uh-btn {
+        display: none;
+        align-content: center;
+        flex-direction: column;
+        margin-top: 2vh;
+      }
+
+      #btn_calcular {
+        text-align: center;
+        width: 100%;
+        margin-top: 1vh;
+        margin-bottom: 3vh;
+      }
+
+    </style>
+</head>
+<body>
+
+	<div style="margin-left:10px;margin-bottom: 3vh;width:100%;">
+		<img src="../static/img/pbe_logo.png" width="346" height="111" style="float:left;text-align: center;margin-left: 20vw;">
+		<span style="margin-right: 10px;margin-top: 15px;text-align: center;float:left;margin-left: 10vw;">
+      <span style="font-size: 20px;color:#6E6E6E;">Edificações Residenciais</span><br>
+        Método simplificado - Envoltória<br>
+        Edificações condicionadas artificialmente <br>
+        e ventiladas naturalmente
+		</span>
+	</div>
+
+    <!-- <h1>Interface do metamodelo da INI-R</h1>
+
+    <h3>Entradas da unidade habitacional (UH)</h3> -->
+
+    <table style="margin-bottom: 1vh;">
+
+        <!-- 
+          <th>Estado <span id="estado_question" style="float:right;margin-left:1vw;" title="Deve-se definir o estado onde a UH está localizada."><i class="fa fa-question-circle" style="font-size:18px;"></i></span></th>
+        <td>
+          <select name="estado" id="estado">
+            <option value="AC">Acre</option>
+            <option value="AL">Alagoas</option>
+            <option value="AP">Amapá</option>
+            <option value="AM">Amazonas</option>
+            <option value="BA">Bahia</option>
+            <option value="CE">Ceará</option>
+            <option value="DF">Distrito Federal</option>
+            <option value="ES">Espírito Santo</option>
+            <option value="GO">Goiás</option>
+            <option value="MA">Maranhã</option>
+            <option value="MT">Mato Grosso</option>
+            <option value="MS">Mato Grosso do Sul</option>
+            <option value="MG">Minas Gerais</option>
+            <option value="PA">Pará</option>
+            <option value="PB">Paraíba</option>
+            <option value="PR">Paraná</option>
+            <option value="PE">Pernambuco</option>
+            <option value="PI">Piauí</option>
+            <option value="RJ">Rio de Janeiro</option>
+            <option value="RN">Rio Grande do Norte</option>
+            <option value="RS">Rio Grande do Sul</option>
+            <option value="RO">Rondônia</option>
+            <option value="RR">Roraima</option>
+            <option value="SC">Santa Catarina</option>
+            <option value="SP">São Paulo</option>
+            <option value="SE">Sergipe</option>
+            <option value="TO">Tocantins</option>
+          </select>              
+        </td>
+      </tr> -->
+      <h2 style="text-align: center;margin-top:25px;margin-bottom:20px;font-size:25px;border: 2px;text-decoration: underline;color:#6E6E6E">Parâmetros gerais da UH</h2>
+      <tr>
+        <th>Cidade <span id="cidade_question" title="Deve-se definir a cidade onde a UH está localizada."><i class="fa fa-question-circle" style="font-size:18px;"></i></span></th>
+        <td>
+            <select name="city" id="city"></select>
+        </td>
+      </tr>
+      </table>
+      
+        <button type="button"  onclick="$('#gcModal').modal('show');" data-toggle="modal" data-target="#gcModal" style="border-radius:5px;font-weight:bold;color:#000000;border: 1px solid #000000;background-color: #7070705b;float:right;margin-left:1vw;margin-bottom: 10px; width:390px;height: 35px;">
+					Não encontrou sua cidade?
+				</button>
+      
+      <table>
+      <tr>
+        <th>Área total dos APTs [m²] <span id="area_apts_question" style="float:right;margin-left:1vw;" title="Deve-se inserir o valor que representa a soma de todas as áreas de permanência transitória (APT) da edificação residencial em m²." ><i class="fa fa-question-circle" style="font-size:18px;"></i></span></th>
+        <td>
+          <input type="number" name="area_apt" id="area_apt" min="1.86" max="342.7"></input>
+          <span id="area_apt_warning" class="warning-div"></span>          
+        </td>
+    </tr>
+    <tr>
+      <th>Número de APPs <span id="numero_apps_question" style="float:right;margin-left:1vw;" title="Número de ambientes de permanência prolongada."><i class="fa fa-question-circle" style="font-size:18px;"></i></span></th>
+      <td>
+         <input type="number" name="num_apps" id="num_apps" min="1" max="10"></input>
+         <span id="num_apps_warning" class="warning-div"></span> 
+      </td>
+  </tr>
+
+  </table>
+
+    <div id="app-input">
+      <h3 style="text-align: center;margin-top:25px;margin-bottom:20px;font-size:25px;border: 2px;text-decoration: underline;color:#6E6E6E"> Parâmetros ou informações dos ambientes de permanência prolongada (APP) </h3>
+
+      <table name='table_app' id='table_app'>
+      </table>
+    </div>
+    
+    <div id="uh-btn">
+      <button style="width:300px;height: 50px;font-size: 20px;" id="btn_calcular" type="button" class="btn btn-primary" onclick="run_calc()" disabled=true>
+        Calcular  
+      </button>
+    </div>
+  
+  <!-- <button id='btn_calcular' class="btn_calcular_style" onclick="run_calc()" disabled=true>Calcular</button><br><br> 
+  
+    <p>PHsFT (%): <a name="PHsFT" id="PHsFT"></a></p>
+    <p>PHiFT (%): <a name="PHiFT" id="PHiFT"></a></p>
+    <p>CgTR (kWh): <a name="CgTR" id="CgTR"></a></p>
+    <p>CgTA (kWh): <a name="CgTA" id="CgTA"></a></p>
+    <p>TOMax (°C): <a name="TOMax" id="TOMax"></a></p>
+    <p>TOMin (°C): <a name="TOMin" id="TOMin"></a></p> -->
+
+
+    <!-- Button trigger modal -->
+
+
+
+<!-- Modal cidades -->
+
+<div class="modal fade" id="gcModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+    
+    </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: medium; text-align: center;">Caso a cidade de implantação da UH não esteja dentre as cidades listadas (cidades com arquivos climáticos INMET), deve ser utilizado o arquivo climático de uma cidade próxima com clima semelhante. A semelhança entre os climas deve considerar a comparação da distância euclidiana, ponderando latitude, longitude e altitude.</p>
+
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#gcModal').modal('hide')" style="width:100%">Fechar</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Modal RESULTADO-->
+<div class="modal fade" id="resultados_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Resultados</h5>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+          <tbody>
+            <tr>
+              <td>PHFT (%): </td>
+              <td><a name="PHFT" id="PHFT"></a></td>
+            </tr>
+            <tr>
+              <td>PHsFT (%): </td>
+              <td><a name="PHsFT" id="PHsFT"></a></td>
+            </tr>
+            <tr>
+              <td>PHiFT (%): </td>
+              <td><a name="PHiFT" id="PHiFT"></a></td>
+            </tr>
+            <tr>
+            <tr>  
+              <td>CgTR (kWh): </td>
+              <td><a name="CgTR" id="CgTR"></a></td>
+            </tr>
+            <tr>
+              <td>CgTA (kWh): </td>
+              <td><a name="CgTA" id="CgTA"></a></td>
+            </tr>
+            <tr>
+              <td>Tomax (°C): </td>
+              <td><a name="TOMax" id="TOMax"></a></td>
+            </tr>
+            <tr>
+              <td>Tomin (°C): </td>
+              <td><a name="TOMin" id="TOMin"></a></td>
+            </tr>
+            <tr>
+              <td>Consumo para resfriamento (kWh): </td>
+              <td><a name="Consumo_resfriamento" id="Consumo_resfriamento"></a></td>
+            </tr>
+            <tr>
+              <td>Consumo para aquecimento (kWh): </td>
+              <td><a name="Consumo_aquecimento" id="Consumo_aquecimento"></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button style="width:100%" id="close-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Voltar para a interface do metamodelo </button>
+        <a class="btn btn-primary" href="/info_complementares"><span class="btn btn-primary" >Avançar para as informações complementares da classificação de Eficiência Energética da edificação</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+    <script type="text/javascript">
+        
+    	entradasAPPs = [
+        
+		
+    [['Uso do ambiente', 'amb'], 's', [['Dormitório', 1], ['Sala', 0]]],
+    [['Coeficente de eficiência energética do sistema de AC para refrigeração [CEEr]', 'CEEr_app', '2.2', '10'], 'n'],
+    [['Coeficente de eficiência energética do sistema de AC para aquecimento [CEEa]', 'CEEa_app', '2.2', '10'], 'n'],
+    [['Condição de exposição do piso', 'piso'], 's', [['Contato com o solo', "solo"], ['Entre pavimentos', "pavimento"]]],
+    [['Condição de exposição da cobertura', 'cob'], 's', [['Exposto ao sol e ao vento', 'sol'], ['Entre pavimentos', 'pav']]],
+		[['Área de piso do APP [m²]', 'aAPP', '4.36', '219.65'], 'n'],
+		[['Pé-direito [m] ', 'pedireito', '2.38', '7.5'], 'n'],
+		[['Possui veneziana?', 'vene'], 's', [['Sim', 1], ['Não', 0]]],
+		[['Ângulo de desvio em relação ao norte verdadeiro [°]', 'azimute', '-44.99', '45.00'], 'n'],		
+		[['Área efetiva de ventilação ', 'fv', '0', '150'], 'n'],
+    [['Transmitância térmica do vidro [W/m²K] ', 'u_vidro', '2.50', '5.87'], 'n'],
+    [['Fator solar do vidro ', 'fs_vidro', '0.20', '0.90'], 'n'],
+    [['Transmitância térmica do piso [W/m²K] ', 'u_piso', '0.70', '4.10'], 'n'],
+    [['Capacidade térmica do piso [kJ/(m.²K)] ', 'ct_piso', '23', '440'], 'n'],
+		[['Absortância da parede externa ', 'abs_parext', '0.2', '0.9'], 'n'],
+    [['Transmitância térmica das paredes externas [W/m²K] ', 'u_parext', '0.24', '4.40'], 'n'],
+    [['Capacidade térmica das paredes externas [kJ/(m.²K)] ', 'ct_parext', '17.69', '250'], 'n'],
+		[['Absortância da cobertura ', 'abs_cob', '0.2', '0.9'], 'n'],
+    [['Transmitância térmica da cobertura [W/m²K] ', 'u_cob', '0.45', '3.8'], 'n'],
+    [['Capacidade térmica da cobertura [kJ/(m.²K)] ', 'ct_cob', '22.3', '550'], 'n'],	
+    [['Dim. Horizontal de paredes em contato com APT [m]', 'contato_apt', '0', '10000'], 'n'],
+    [['Dim. Horizontal de paredes e portas em contato com o dormitório [m]', 'contato_dorm', '0', '10000'], 'n'],
+    [['Dim. Horizontal de paredes e portas em contato com a sala [m]', 'contato_sala', '0', '10000'], 'n']
+      ]
+
+    	entradasPorOriAPP = []
+    	porori = [
+			['AHSd [°]:', 'ahd', {
+				'Norte': '90.00',
+				'Sul'  : '90.00',
+				'Leste': '90.00',
+				'Oeste': '90.00'
+			}],
+			['AHSe [°]:', 'ahe', {
+				'Norte': '90.00',
+				'Sul'  : '90.00',
+				'Leste': '90.00',
+				'Oeste': '90.00'
+			}],
+			['AOV [°]:', 'ave', {
+				'Norte': '90.00',
+				'Sul'  : '90.00',
+				'Leste': '90.00',
+				'Oeste': '90.00'
+			}],
+			['AVS [°]:', 'avs', {
+				'Norte': '90.00',
+				'Sul'  : '90.00',
+				'Leste': '90.00',
+				'Oeste': '90.00'
+			}],
+			['Dim. Horizontal Par. Externa [m]:', 'DHext', '0', '52.32'],
+			['Dim. Horizontal Par. Interna [m]:', 'DHint', '0', '71'],
+			['Área de superfície dos elementos transparentes [m²]:', 'aJan', '0', '92.27']
+		];
+
+    	ori = ['Norte', 'Sul', 'Leste', 'Oeste'];
+		
+		for (var j = 0; j < ori.length; j++) {
+			for (var i = 0; i < porori.length; i++) {
+				if (porori[i].length > 3) {
+					nome = [[`${porori[i][0]} ${ori[j]}`, `${porori[i][1]}_${ori[j][0]}`, `${porori[i][2]}`, `${porori[i][3]}`], 'n']	
+				}
+				else {
+					nome = [[`${porori[i][0]} ${ori[j]}`, `${porori[i][1]}_${ori[j][0]}`, '0', `${porori[i][2][ori[j]]}`], 'n']
+				}
+				entradasPorOriAPP.push(nome)
+			}
+		}
+
+		entradasAPPs = entradasAPPs.concat(entradasPorOriAPP)
+
+    	entradasPorOriAPP = []
+    	porori = [['Porta Interna:', 'porta']];
+		for (var i = 0; i < porori.length; i++) {
+			for (var j = 0; j < ori.length; j++) {
+				nome = [[`${porori[i][0]} ${ori[j]}`, `${porori[i][1]}_${ori[j][0]}`], 's', [['Não', 0], ['Sim', 1]]]
+				entradasPorOriAPP.push(nome)
+			}
+		}
+
+		entradasAPPs = entradasAPPs.concat(entradasPorOriAPP)
+
+		//console.log(entradasAPPs);
+
+    	create_select = function(idname, opcoes, i) {
+    		idname = `${idname}_${i}`
+    		str = `<td><select name="${idname}" id="${idname}">`
+    		for (var i = 0; i < opcoes.length; i++) {
+    			str = str + `<option value="${opcoes[i][1]}">${opcoes[i][0]}</option>`
+			}
+            str = str + '</select></td>'
+            return str
+		}
+
+        create_input_number = function(idname, min, max, i) {
+        	idname = `${idname}_${i}`
+        	str =
+				`<td>
+					<input type="number" name="${idname}" id="${idname}" min="${min}" max="${max}" value=0></input>
+					<div>
+						<span id="${idname}_warning" class="warning-div"></span>
+					</div>
+				</td>`
+			return str
+		}
+
+        create_apps_func = function() {
+
+            num_apps = parseInt(document.getElementById("num_apps").value);
+			
+			str = '<tr><th></th>'
+			for(var i = 0; i < num_apps; i++) {
+				str = str + `<th style="padding-left:2vw;">APP ${i}</th>`
+			}
+			str = str + '</tr>'
+            
+			if (parseInt(num_apps) > 0) {
+            	for(var j = 0; j < entradasAPPs.length; j++) {
+					tipo = entradasAPPs[j][1]
+	            	label_idname = entradasAPPs[j][0]
+	            	str = str + `<tr><th>${label_idname[0]} <span id="${label_idname[1]}_question" style="float:right;margin-left:1vw;" ><i class="fa fa-question-circle" style="font-size:18px;"></i></span></th>`
+	            	
+					if (tipo=='s') {
+		            	opcoes = entradasAPPs[j][2]
+						for(var i = 0; i < num_apps; i++) {
+							str = str + create_select(label_idname[1], opcoes, i)
+						}
+	            	}
+					else if (tipo=='n') {
+		            	for(var i = 0; i < num_apps; i++) {
+							str = str + create_input_number(label_idname[1], label_idname[2], label_idname[3], i)
+						}
+	            	}
+	            	str = str + '</tr>'
+	        	}
+				document.getElementById('table_app').innerHTML = str;
+				document.getElementById('app-input').style.display = 'flex';
+				document.getElementById('uh-btn').style.display = 'flex';
+				if (num_apps>0) {
+					document.getElementById('btn_calcular').disabled = false
+				}
+				else {
+					document.getElementById('btn_calcular').disabled = true
+				}
+	        }
+
+          const appIds = ['amb', 'CEEr_app','CEEa_app',  'piso', 'cob', 'aAPP', 'pedireito', 'vene', 'azimute', 'fv', 'u_vidro', 'fs_vidro', 'u_piso', 'ct_piso','abs_parext','u_parext','ct_parext','abs_cob', 'u_cob','ct_cob','contato_apt','contato_dorm','contato_sala', 'ahd', 'ahe', 'ave', 'avs', 'DHext', 'DHint', 'aJan', 'porta'];
+          const complementsToApp = ['_N', '_S', '_L', '_O'];
+
+          $.getJSON("../static/json/informacoes_app.json", function(json) {
+            for (let i = 0; i < 23; i++) {
+              document.getElementById(`${appIds[i]}_question`).title = json[appIds[i]].conteudo;
+            }
+            for (let i = 23; i < appIds.length; i++) {
+              for (let j = 0; j < complementsToApp.length; j++) {
+                try {
+                      document.getElementById(`${appIds[i]}${complementsToApp[j]}_question`).title = json[appIds[i]].conteudo;
+                  }
+                catch(err) {
+                  console.log(err + `\nERROR: ${appIds[i]}${complementsToApp[j]}_question`);
+                }
+              }
+            }
+          });
+
+      // Valores tratados como inv�lidos n�o entram na valida��o de valores limites
+      invalidValues = ['cob', 'piso', 'amb', 'vene', 'porta_N', 'porta_S', 'porta_L', 'porta_O', 'azimute', 'contato_apt', 'contato_dorm', 'contato_sala', 'CEEa_app', 'CEEr_app'];
+
+			const testForValid = (entrada, invalidValuesObj) => {
+        for (let i = 0; i < invalidValuesObj.length; i++) {
+          if (entrada === invalidValuesObj[i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+      
+      for (let n = 0; n < num_apps; n++) {
+				for (let k = 0; k < entradasAPPs.length; k++) {
+          if (testForValid(`${entradasAPPs[k][0][1]}`, invalidValues)) {
+            document.getElementById(`${entradasAPPs[k][0][1]}_${n}`).addEventListener('input', (e) => {
+						checkForValidInput(e);
+            });
+            document.getElementById(`${entradasAPPs[k][0][1]}_${n}`).addEventListener('focusout', (e) => {
+              inputEnabler(e);
+            });
+          }
+				}
+			}
+
+        };
+
+        document.getElementById("num_apps").addEventListener("keyup", function() {
+			create_apps_func();
+			for (let i = 0; i < listaDeVariaveisDaUH.length; i++) {
+        
+				document.getElementById(listaDeVariaveisDaUH[i]).addEventListener('input', (e) => {
+				checkForValidInput(e);
+				});
+				document.getElementById(listaDeVariaveisDaUH[i]).addEventListener('focusout', (e) => {
+				inputEnabler(e);
+				});
+
+			}
+		});
+
+      function sleep (time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+      }
+
+	 // CALCULO DOS APPS
+      run_calc = function () {
+
+          document.getElementById('btn_calcular').disabled = true
+							
+			nomeEntradasUH = ['city','area_apt', 'num_apps']
+
+          dict = ''
+          areaTJan = {}
+          dPExt = {}
+          dPInt = {}
+          oript = ['N', 'S', 'L', 'O'];
+          for (var j = 0; j < oript.length; j++) {
+            areaTJan[oript[j]] = 0
+            dPExt[oript[j]] = 0
+            dPInt[oript[j]] = 0
+            for (var i = 0; i < num_apps; i++){
+              areaTJan[oript[j]] = areaTJan[oript[j]] + parseFloat(document.getElementById(`aJan_${oript[j]}_${i}`).value)
+              dPExt[oript[j]] = dPExt[oript[j]] + parseFloat(document.getElementById(`DHext_${oript[j]}_${i}`).value)
+              dPInt[oript[j]] = dPInt[oript[j]] + parseFloat(document.getElementById(`DHint_${oript[j]}_${i}`).value)
+           }
+           dict = dict + `aTJan_${oript[j]}=${areaTJan[oript[j]]}|`
+           dict = dict + `dPExt_${oript[j]}=${dPExt[oript[j]]}|`
+           dict = dict + `dPInt_${oript[j]}=${dPInt[oript[j]]}|`
+          }
+
+          aTotAPP = 0
+          for (var i = 0; i < num_apps; i++){
+            aTotAPP = aTotAPP + parseFloat(document.getElementById(`aAPP_${i}`).value)
+          }
+          dict = dict + `aTotAPP=${aTotAPP}|`
+
+          PHFT_ = 0
+          PHsFT_ = 0
+          PHiFT_ = 0
+          CgTR_ = 0
+          CgTA_ = 0
+          TOMax_ = -100
+          TOMin_ = 100
+          c_resf = 0
+          c_aqueci = 0
+          contador_quartos = 0
+          console.log(document.getElementById($('#city')))
+          PHFT_ref = 0
+          PHsFT_ref = 0
+          PHiFT_ref = 0
+          CgTR_ref = 0
+          CgTA_ref = 0
+          TOMax_ref = -100
+          TOMin_ref = 100
+          c_resf_ref = 0
+          c_aqueci_ref = 0
+
+
+          for (var i = 0; i < num_apps; i++){
+            for (var k=0; k < nomeEntradasUH.length; k++){
+            	dict = dict + `${nomeEntradasUH[k]}=${document.getElementById(nomeEntradasUH[k]).value}|`
+            }
+            for (var j = 0; j < entradasAPPs.length; j++) {
+              idname = entradasAPPs[j][0][1]
+              idname_ = `${idname}_${i}`
+              dict = dict + `${idname}=${document.getElementById(idname_).value}|`
+              cadaEntrada = document.getElementById(idname_).value
+            }
+
+            console.log(dict);
+            //$.getJSON(`https://cb3e.sites.ufsc.br/default/calc/${dict}`, function(data) {
+            $.getJSON(`/default/calc/${dict}`, function(data) {
+              
+              for(var i in data){data[i] = parseFloat(data[i])}
+              //console.log(data['PHsFT'], typeof(data['PHsFT']))
+
+              //TBSm_ = TBSm + data['TBSm']
+              PHsFT_ = PHsFT_ + data['PHsFT']/num_apps
+              PHiFT_ = PHiFT_ + data['PHiFT']/num_apps
+              CgTR_ = CgTR_ + data['CgTR']
+              CgTA_ = CgTA_ + data['CgTA']
+              if(TOMax_ < data['TOMax']){TOMax_ = data['TOMax']}
+              if(TOMin_ > data['TOMin']){TOMin_ = data['TOMin']}            
+              PHFT_ = PHFT_ + data['PHFT']/num_apps
+              c_resf = c_resf + data['Consumo_resfriamento']
+              c_aqueci = c_aqueci + data['Consumo_aquecimento']
+              if (data['tipologia'] == 1) {
+                tipologia = "unifamiliar"
+              }
+              else if (data['tipologia'] == 2) {
+                tipologia = "multifamiliar"
+              }  
+
+              area_cond = data['area_condicionada']
+              zona_bioclimatica = data['zona_bioclimatica']
+              if(data['cond_cob'] == 1) {cond_cob = "sol"} else {cond_cob=="pav"}
+              if(data['cond_piso' == 1]) {cond_piso = "solo"} else {cond_piso = "pav"}
+              
+              PHsFT_ref = PHsFT_ref + data['PHsFTT_ref']/num_apps
+              PHiFT_ref = PHiFT_ref + data['PHiFT_ref']/num_apps
+              CgTR_ref = CgTR_ref + data['CgTR_ref']
+              CgTA_ref = CgTA_ref + data['CgTA_ref']
+              if(TOMax_ref < data['TOMax_ref']){TOMax_ref = data['TOMax_ref']}
+              if(TOMin_ref > data['TOMin_ref']){TOMin_ref = data['TOMin_ref']}            
+              PHFT_ref = PHFT_ref + data['PHFT_ref']/num_apps
+              c_resf_ref = c_resf_ref + data['Consumo_resfriamento_ref']
+              c_aqueci_ref = c_aqueci_ref + data['Consumo_aquecimento_ref']
+              
+              if (data['ambiente'] == 1){contador_quartos += 1}
+
+              document.getElementById('PHsFT').innerHTML = PHsFT_.toFixed(2)
+              document.getElementById('PHiFT').innerHTML = PHiFT_.toFixed(2)
+              document.getElementById('PHFT').innerHTML = PHFT_.toFixed(2)
+              document.getElementById('TOMax').innerHTML = TOMax_.toFixed(2)
+              document.getElementById('TOMin').innerHTML = TOMin_.toFixed(2)
+              document.getElementById('Consumo_resfriamento').innerHTML =  c_resf.toFixed(2)
+              document.getElementById('Consumo_aquecimento').innerHTML =  c_aqueci.toFixed(2)
+              document.getElementById('CgTR').innerHTML = CgTR_.toFixed(2)
+              document.getElementById('CgTA').innerHTML = CgTA_.toFixed(2)
+              
+              
+              
+              localStorage.CRESF_real = c_resf;
+              localStorage.CAQUE_real = c_aqueci;
+              localStorage.Carga_resf_real = CgTR_;
+              localStorage.Carga_aq_real = CgTA_;
+              localStorage.Carga_resf_ref = CgTR_ref;
+              localStorage.Carga_aq_ref = CgTA_ref;
+              localStorage.PHFT_real = PHFT_;
+              localStorage.PHFT_ref = PHFT_ref;
+              localStorage.TOMax = TOMax_;
+              localStorage.TOMax_ref = TOMax_ref;
+              localStorage.TOMin = TOMin_;
+              localStorage.TOMin_ref = TOMin_ref;
+              localStorage.quartos = contador_quartos;
+              localStorage.area_cond = area_cond;
+              localStorage.tipologia = tipologia;
+              localStorage.cond_cob = cond_cob;
+              localStorage.cond_piso = cond_piso;
+              localStorage.zona_bioclimatica = zona_bioclimatica;
+              
+
+                            
+            })
+
+          }
+        
+          // console.log(`http://127.0.0.1:5000/calc/${dict}`)
+          // console.log(`https://cb3e.sites.ufsc.br/calc/${dict}`)
+          sleep(1000).then(() => {
+              document.getElementById('btn_calcular').disabled = false
+          });
+
+          $('#resultados_modal').modal('show');
+
+          document.getElementById('close-btn').addEventListener('click', () => {
+            $('#resultados_modal').modal('hide');
+          });
+
+      }
+
+
+      // C�digo JQuery que gera elementos option preenchidos pelas cidades retornadas pela API no site do cb3e.
+      $(document).ready(function() {
+          //$.getJSON('https://cb3e.sites.ufsc.br/default/nome_climas', function(data, status) {
+            $.getJSON('/nome_climas', function(data, status) {
+              for (var el in data) {
+                $('#city').append(`<option value="${data[el]}"> ${ data[el] } </option>`);
+
+                /*if (data[el].includes('INMET')){
+                  $('#city').append(`<option value="${ data[el].slice(-16, -10) }"> ${ data[el] } </option>`);
+                }
+                else{
+                  $('#city').append(`<option value="${ data[el].slice(-25, -19) }"> ${ data[el] } </option>`);
+                }*/
+              }
+          });
+      });
+
+      // Lista com as ids de cada campo de input da interface.
+      const listaDeVariaveisDaUH = ['area_apt', 'num_apps'];
+      
+      // Fun��o que checa o valor de entrada nos campos de input da interface e, baseado nele, ativa o campo logo abaixo.
+      const inputEnabler = (e) => {
+        let val = parseFloat(e.target.value);
+        let min = parseFloat(e.target.min);
+        let max = parseFloat(e.target.max);
+        let index = listaDeVariaveisDaUH.indexOf(e.target.id);
+        if (!(val >= min && val <= max) && e.target.value != "") {
+          alert(`VALOR FORA DA FAIXA PERMITIDA\nValor mínimo permitido: ${min}. Valor máximo permitido: ${max}.`);
+          if (val < min) {
+            e.target.value = min;
+          }
+          if (val > max) {
+            e.target.value = max;
+          }
+          
+          document.getElementById(`${e.target.id}`+'_warning').innerHTML = '';
+
+          // Se o elemento for a transmit�ncia t�rmica do piso, o valor da transmit�ncia t�rmica da cobertura precisa ser apagada.
+          if (e.target.id === 'u_piso') {
+            document.getElementById('u_cob').value = '';
+          }
+        }
+        else if (e.target.value == "") { ; }
+        // else if (index < listaDeVariaveisDaUH.length - 1) {
+        //   document.getElementById(listaDeVariaveisDaUH[index + 1]).disabled = false;
+        // }
+      };
+
+      /*
+        Fun��o que verifica o valor inserido cada vez em que seu valor muda, e o compara com os valores m�ximo e m�nimo permitidos
+        para o elemento input em quest�o. O c�digo tamb�m gera um texto de aviso que � inserido na div logo abaixo do element input
+        sempre que o valor fugir dos limites estabelecidos.
+      */
+      const checkForValidInput = (e) => {
+        let val = parseFloat(e.target.value);
+        let min = parseFloat(e.target.min);
+        let max = parseFloat(e.target.max);
+        if (!(val >= min && val <= max) && e.target.value != "") {
+          document.getElementById(`${e.target.id}`+'_warning').innerHTML = `VALOR MÍNIMO: ${min}. VALOR MÁXIMO ${max}.`;
+          document.getElementById(`${e.target.id}`+'_warning').style.display = 'block';
+          if (e.target.id === 'num_apps') {
+            alert(`VALOR FORA DA FAIXA PERMITIDA\nValor mínimo permitido: ${min}. Valor máximo permitido: ${max}.`);
+            e.target.value = '1';
+            document.getElementById(`${e.target.id}`+'_warning').innerHTML = '';
+          }
+        }
+        else {
+          document.getElementById(`${e.target.id}`+'_warning').innerHTML = '';
+          document.getElementById(`${e.target.id}`+'_warning').style.display = 'none';
+        }
+      }
+
+      // For loop que adicionar um event listener a cada elemento com id armazenado em listaDeVariaveisDaUH.
+      for (let i = 0; i < listaDeVariaveisDaUH.length; i++) {
+        
+        document.getElementById(listaDeVariaveisDaUH[i]).addEventListener('input', (e) => {
+          checkForValidInput(e);
+        });
+        document.getElementById(listaDeVariaveisDaUH[i]).addEventListener('focusout', (e) => {
+          inputEnabler(e);
+        });
+
+      }
+
+      /*
+      // Insere, no t�tulo de cada elemento de input, o conte�do correspondente � sua descri��o.
+      $.getJSON("informacoes.json", function(json) {
+        for (var key in json) {
+          document.getElementById(key).title = json[key].conteudo;
+        }
+      });*/
+
+      // Fun��o que implementa a logica do event listener acima.
+      
+      let uCobCondition = false
+      function auxiliarCob(cond, appid) {
+
+        const elements = ['ct_cob', 'u_cob', 'abs_cob'];
+        if (cond) {
+          const values = ['1', '100','0.2'];
+          for (let i = 0; i < elements.length; i++) {
+
+            document.getElementById(elements[i]+'_'+appid).disabled = true;
+            if (elements[i] === 'ct_cob_'+appid) {
+              document.getElementById(elements[i]+'_'+appid).style.color = 'white';
+              document.getElementById(elements[i]+'_'+appid).value = getRandomArbitrary(elements[i]+'_'+appid);
+            }
+          }
+          //uCobCondition = true;
+        }
+        else {
+          for (let i = 0; i < elements.length; i++) {
+            document.getElementById(elements[i]+'_'+appid).disabled = false;
+            document.getElementById(elements[i]+'_'+appid).style.color = 'black';
+            document.getElementById(elements[i]+'_'+appid).value = '';
+          }
+          //uCobCondition = false;
+        }
+      }
+
+      // Desabilita u_cob e ct_cob se cob � setado para 'entre pavimentos'.
+      document.getElementById('num_apps').addEventListener('change', (e) => {
+        
+        for(let i = 0; i<num_apps; i++){
+          document.getElementById('cob_'+i).addEventListener('change', (e) => {
+            auxiliarCob(e.target.value === 'pav', i)
+                                               // deve retornar a uCobCondition[numero_da_app]
+          })
+        
+        }
+
+        for(let i = 0; i< num_apps; i++){
+        document.getElementById('u_piso_'+i).addEventListener('change', (e) => {
+            
+            if (document.getElementById('cob_'+i).value =='pav') {                                                        // tem que ter um uCobCondition[numero_da_app]
+              document.getElementById('u_cob_'+i).value = e.target.value;
+              document.getElementById('abs_cob_'+i).value = 0.2;
+              document.getElementById('u_cob_'+i).style.color = 'grey';
+              document.getElementById('u_cob_'+i).disabled = true;
+            }
+          })
+        
+          document.getElementById('ct_piso_'+i).addEventListener('change', (e) => {
+            if (document.getElementById('cob_'+i).value =='pav') {                                                        // tem que ter um uCobCondition[numero_da_app]
+            document.getElementById('ct_cob_'+i).value = e.target.value;
+            document.getElementById('ct_cob_'+i).style.color = 'grey';
+            document.getElementById('ct_cob_'+i).disabled = true;
+          }
+        })
+      }
+
+      })
+
+      
+      
+     
+      // Fun��o que retorna um valor aleat�rio entre os limites estabelecidos para u_cob e ct_cob, com precis�o de duas
+      // casas decimais.
+      function getRandomArbitrary(element) {
+        let min = parseFloat(document.getElementById(element).min);
+        console.log(min);
+        let max = parseFloat(document.getElementById(element).max);
+        console.log(max);
+        let result = (Math.floor(Math.random() * (100 * max - 100 * min) + 100 * min) / 100 ).toString();
+        console.log(result);
+        return result;
+      }
+
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="undefined" crossorigin="anonymous"></script>
+
+</body>
+</html>
