@@ -3,14 +3,14 @@ import src.tools as tools
 import os, json, copy, statistics
 from json import dumps
 import pandas as pd
-from flask_cors import CORS, cross_origin
+#from flask_cors import CORS, cross_origin
 import src.import_xlsx as modelo
 import io
 from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
 
 
