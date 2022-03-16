@@ -14,15 +14,7 @@ CORS(app)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
 
 @app.before_first_request
-    
-
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('index.html')
-
-@app.route('/upload', methods=['GET', 'POST'])
-def data():
+def execute():
     dfclimas_ = pd.read_csv('db/baseweb_inmet.csv')
     dfclimas = tools.read_csv('db/baseweb_inmet.csv')
     dfclimas = tools.converter2float(dfclimas)
@@ -42,8 +34,17 @@ def data():
     posicoes_array = json.load(open('db/entradas_todos.json'))
     posicoes_array = {int(i): posicoes_array[i] for i in posicoes_array}
 
-    app.secret_key = adshuuasdh23293adas
+    app.secret_key = 'adshuuasdh23293adas'
     app.config['SESSION_TYPE'] = 'filesystem'
+    
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    return render_template('index.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def data():
     
     if request.method == 'POST':
         file = request.files['upload-file']
