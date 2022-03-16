@@ -164,8 +164,12 @@ def complementares_upload():
 
 @app.route('/interface')
 def interface():
+    dfclimas_ = pd.read_csv('db/baseweb_inmet.csv')
+    dfclimas = tools.read_csv('db/baseweb_inmet.csv')
+    dfclimas = tools.converter2float(dfclimas)
     nomeclimas = list(set(dfclimas['cidade']))
     nomeclimas.sort()
+
     return render_template('interface.html', nomeclimas=nomeclimas)
 
 @app.route('/info_complementares', methods=['GET'])
