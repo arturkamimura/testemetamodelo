@@ -14,7 +14,15 @@ CORS(app)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
 
 @app.before_first_request
-def execute():
+    
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    return render_template('index.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def data():
     dfclimas_ = pd.read_csv('db/baseweb_inmet.csv')
     dfclimas = tools.read_csv('db/baseweb_inmet.csv')
     dfclimas = tools.converter2float(dfclimas)
@@ -36,14 +44,7 @@ def execute():
 
     app.secret_key = adshuuasdh23293adas
     app.config['SESSION_TYPE'] = 'filesystem'
-
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('index.html')
-
-@app.route('/upload', methods=['GET', 'POST'])
-def data():
+    
     if request.method == 'POST':
         file = request.files['upload-file']
         save_path = os.path.join(UPLOAD_FOLDER, secure_filename(file.filename))
