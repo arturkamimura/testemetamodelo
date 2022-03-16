@@ -12,6 +12,27 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 CORS(app)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
+dfclimas_ = pd.read_csv('db/baseweb_inmet.csv')
+dfclimas = tools.read_csv('db/baseweb_inmet.csv')
+dfclimas = tools.converter2float(dfclimas)
+nomeclimas = list(set(dfclimas['cidade']))
+nomeclimas.sort()
+
+dflim = tools.read_csv('db/limites_metamodelo.csv')
+
+nomeredes = {
+    'CgTR': 'network/dnn_OUT_CgTT_Cooling_0.99547_0.4165_11.92.onnx',
+    'CgTA': 'network/dnn_OUT_CgTT_Heating_0.99845_0.1747_11.43.onnx',
+    'PHsFT': 'network/dnn_OUT_PHFFT_Calor_0.99715_1.7158_8.16.onnx',
+    'PHiFT': 'network/dnn_OUT_PHFFT_Frio_0.99955_0.6177_4.68.onnx',
+    'TOMax': 'network/dnn_OUT_TOMax_0.99826_0.201_0.76.onnx',
+    'TOMin': 'network/dnn_OUT_TOMin_0.99885_0.1647_0.82.onnx'}
+
+posicoes_array = json.load(open('db/entradas_todos.json'))
+posicoes_array = {int(i): posicoes_array[i] for i in posicoes_array}
+
+app.secret_key = adshuuasdh23293adas
+app.config['SESSION_TYPE'] = 'filesystem'
 
 
 @app.route('/', methods=['GET', 'POST'])
