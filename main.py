@@ -164,6 +164,8 @@ def complementares_upload():
 
 @app.route('/interface')
 def interface():
+    nomeclimas = list(set(dfclimas['cidade']))
+    nomeclimas.sort()
     return render_template('interface.html', nomeclimas=nomeclimas)
 
 @app.route('/info_complementares', methods=['GET'])
