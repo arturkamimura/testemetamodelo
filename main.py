@@ -90,6 +90,8 @@ def data():
 @app.route('/download_xlsx', methods=['GET', 'POST'])
 def download_xlsx():
     df = session.get("df")
+    app.secret_key = 'adshuuasdh23293adas'
+    app.config['SESSION_TYPE'] = 'filesystem'
     df.pop('CEE aquecimento')
     df.pop('CEE resfriamento')
     nome_uh = df['UH']['0']
@@ -103,7 +105,8 @@ def download_xlsx():
 @app.route('/info_complementares_upload', methods=['GET'])
 def complementares_upload():
     df = session.get("df")
-
+    app.secret_key = 'adshuuasdh23293adas'
+    app.config['SESSION_TYPE'] = 'filesystem'
     cee_aq = df['CEE aquecimento']
     cee_resf = df['CEE resfriamento']
     df.pop('CEE aquecimento')
