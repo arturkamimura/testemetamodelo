@@ -257,7 +257,7 @@ if __name__ == '__main__':
     posicoes_array = json.load(open('db/entradas_todos.json'))
     posicoes_array = {int(i): posicoes_array[i] for i in posicoes_array}
 
-    app.secret_key = 'chave de acesso LABEEE'
+    app.secret_key = adshuuasdh23293adas
     app.config['SESSION_TYPE'] = 'filesystem'
 
     #app.run(debug=False, host='0.0.0.0', port=5000)
