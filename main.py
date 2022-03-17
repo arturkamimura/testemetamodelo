@@ -269,6 +269,11 @@ def calc(data):
 
 @app.route(f'/nome_climas', methods=['GET'])
 def get_climas_ann_v3():
+    dfclimas_ = pd.read_csv('db/baseweb_inmet.csv')
+    dfclimas = tools.read_csv('db/baseweb_inmet.csv')
+    dfclimas = tools.converter2float(dfclimas)
+    nomeclimas = list(set(dfclimas['cidade']))
+    nomeclimas.sort()
     return jsonify(nomeclimas)
 
 
