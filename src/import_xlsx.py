@@ -739,7 +739,9 @@ def metamodelo(xlsx_file):
                  'network\dnn_OUT_PHFFT_Frio_0.99955_0.6177_4.68.onnx': 'PHiFT',
                  'network\dnn_OUT_TOMax_0.99826_0.201_0.76.onnx': 'Tomax',
                  "network\dnn_OUT_TOMin_0.99885_0.1647_0.82.onnx": 'Tomin'})
-
+    
+    print(df_out)
+    
     df_ref_out = df_out_ref.rename(
         columns={'network\dnn_OUT_CgTT_Cooling_0.99547_0.4165_11.92.onnx': 'Carga_termica_resfriamento',
                  'network\dnn_OUT_CgTT_Heating_0.99845_0.1747_11.43.onnx': 'Carga_termica_aquecimento',
