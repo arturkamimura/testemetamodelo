@@ -1,0 +1,2129 @@
+<html ng-app="rede">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Interface do Metamodelo INI-C </title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>	
+
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	<script src="../autoNumeric/autoNumeric.js" type="text/javascript"></script>
+	<script src="../libs/angular.min.js" type="text/javascript"></script>
+
+	<!-- Graphs-->
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+	<script src="https://code.highcharts.com/modules/exporting.js"></script>
+	<script src="https://code.highcharts.com/modules/export-data.js"></script>
+	<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+	<!-- Modelo -->
+	<script src="../model/ann/Ann.js" type="text/javascript"></script>
+	<script src="../model/ann/ActivationFunction.js" type="text/javascript"></script>
+	<script src="../model/ann/neuron/Cons.js" type="text/javascript"></script>
+	<script src="../model/ann/neuron/Neuron.js" type="text/javascript"></script>
+	<script src="../model/ann/layer/Layer.js" type="text/javascript"></script>	
+	<script src="../model/ann/AnnLoader.js" type="text/javascript"></script>	
+	<script src="../model/util/XMLReader.js" type="text/javascript"></script>
+
+	<!-- Estilos -->	
+	<style type="text/css">
+
+		.dropdown-submenu {
+			position:relative;
+		}
+		.dropdown-submenu>.dropdown-menu {
+			top:0;
+			left:100%;
+			margin-top:-6px;
+			margin-left:-1px;
+			-webkit-border-radius:0 6px 6px 6px;
+			-moz-border-radius:0 6px 6px 6px;
+			border-radius:0 6px 6px 6px;
+		}
+		.dropdown-submenu:hover>.dropdown-menu {
+			display:block;
+		}
+		.dropdown-submenu>a:after {
+			display:block;
+			content:" ";
+			float:right;
+			width:0;
+			height:0;
+			border-color:transparent;
+			border-style:solid;
+			border-width:5px 0 5px 5px;
+			border-left-color:#cccccc;
+			margin-top:5px;
+			margin-right:-10px;
+		}
+		.dropdown-submenu:hover>a:after {
+			border-left-color:#ffffff;
+		}
+		.dropdown-submenu.pull-left {
+			float:none;
+		}
+		.dropdown-submenu.pull-left>.dropdown-menu {
+			left:-100%;
+			margin-left:10px;
+			-webkit-border-radius:6px 0 6px 6px;
+			-moz-border-radius:6px 0 6px 6px;
+			border-radius:6px 0 6px 6px;
+		}
+
+		input.ng-invalid.ng-touched{
+			border: 1px solid red;		
+		}
+		input.ng-invalid.ng-touched{
+		}
+		select.ng-invalid.ng-touched{
+			border: 1px solid red;		
+		}
+		select.ng-invalid.ng-touched{
+		}
+
+		td, th {
+			border: 1px solid rgb(190, 190, 190);
+			padding: 10px;
+		}
+
+		td {
+			text-align: center;
+		}
+
+		tr:nth-child(even) {
+			background-color: #eee;
+		}
+
+		th[scope="col"] {
+			background-color: #696969;
+			color: #fff;
+		}
+
+		th[scope="row"] {
+			background-color: #d7d9f2;
+		}
+
+		table {
+			border-collapse: collapse;
+			border: 2px solid rgb(200, 200, 200);
+			letter-spacing: 1px;
+			font-family: sans-serif;
+			font-size: 15px;
+		}
+
+		.fa {
+			font-size: 50px;
+		}
+
+		#classification-table, #final-results-area, #real-and-ref-table {
+			visibility: collapse;
+		}
+
+		#draw-graphs {
+			display: none;
+		}
+
+
+	</style>
+</head>
+<body ng-controller="edificioCtrl">
+	<div style="width:100%;background-color:white;height:110px;position:relative;">
+	
+	<!-- "cabecalho" -->
+		<div style="margin-left:10px;">
+			<img src="pbe_logo.png" width="346" height="111">
+			<span style="float: right;margin-right: 10px;margin-top: 15px;text-align: right;">
+				<span style="font-size: 20px;color:#6E6E6E;">Edificações Comerciais, de Serviços e Públicas</span><br>
+				Método simplificado - Envoltória<br>
+				Edificações condicionadas artifcialmente
+			</span>
+		</div>
+		<div style="margin-left:360px;float:left;position:absolute;;bottom:0px">
+		
+		<!-- Aba tipologias -->
+			<ul ng-repeat="tipo in pavAtual.tipologias" class="nav nav-tabs" id="tabs" style="float:left">
+				<li ng-class="(tipo==tipologiaAtual)? 'active' : '' "><a data-toggle="tab"  ng-click="setTipologiaAtual(tipo)" href="#"><button class="close closeTab" ng-click="removeTipologia(tipo)" type="button" >×</button>{{tipo.nome}}</a></li> 
+			</ul>
+			<ul ng-show="pavAtual!=undefined && pavAtual.tipologias.length!=tipologias.length" class="nav nav-tabs" id="tabs" style="float:left;">
+				<li class="dropdown" role="presentation">
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+						+<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li ng-repeat="tipo in tipologias" ng-show="tipologiaNotInArray(tipo) && tipo.subtipologias==undefined" ng-click="novaTipologia(tipo)"><a href="#">{{tipo.nome}}</a>
+						</li>
+
+						<li class="dropdown-submenu" ng-repeat="tipo in tipologias"  ng-show="tipo.subtipologias!=undefined">
+							<a href="#">{{tipo.nome}} </a>
+							<ul class="dropdown-menu">
+								<li ng-repeat="sub in tipo.subtipologias" ng-show="tipologiaNotInArray(sub)" ng-click="novaTipologia(sub)">
+									<a href="#">{{sub.nomeParcial}}</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div style="clear:both;"></div>
+	</div>
+	<div id="wrapper">
+	
+		<!-- Modal cidades -->
+		<div class="modal fade" id="gcModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				</div>
+				<div class="modal-body">
+					<p style="font-size: medium; text-align: center;">Caso sua cidade não esteja na lista disponibilizada pela interface, você pode
+						utilizar a cidade representativa do grupo climático correspondente, de acordo
+						com a tabela abaixo. Por exemplo, para a cidade de Pato Branco - PR,
+						localizada no GC 3, utilizar como entrada a cidade de Curitiba - PR.</p>
+					<table class="table">
+						<tr>
+							<th scope="col" style="text-align: center;">Grupo climático</th>
+							<th scope="col" style="text-align: center;">Cidade</th>
+						</tr>
+						<tr>
+							<td>GC 1A</td>
+							<td>Urubici</td>
+						</tr>
+						<tr>
+							<td>CG 1B</td>
+							<td>São Paulo</td>
+						</tr>
+						<tr>
+							<td>GC 2</td>
+							<td>Curitiba</td>
+						</tr>
+						<tr>
+							<td>GC 3</td>
+							<td>Usar grupo 2</td>
+						</tr>
+						<tr>
+							<td>GC 4</td>
+							<td>Usar grupo 2</td>
+						</tr>
+						<tr>
+							<td>GC 5</td>
+							<td>Usar grupo 6</td>
+						</tr>
+						<tr>
+							<td>GC 6</td>
+							<td>Porto Alegre</td>
+						</tr>
+						<tr>
+							<td>GC 7</td>
+							<td>Usar grupo 8</td>
+						</tr>
+						<tr>
+							<td>GC 8</td>
+							<td>Santa Maria</td>
+						</tr>
+						<tr>
+							<td>GC 9</td>
+							<td>Niteroi</td>
+						</tr>
+						<tr>
+							<td>GC 10</td>
+							<td>Belo Horizonte</td>
+						</tr>
+						<tr>
+							<td>GC 11</td>
+							<td>Usar grupo 12</td>
+						</tr>
+						<tr>
+							<td>GC 12</td>
+							<td>Goiânia</td>
+						</tr>
+						<tr>
+							<td>GC 13</td>
+							<td>Rio de Janeiro</td>
+						</tr>
+						<tr>
+							<td>GC 14</td>
+							<td>Usar grupo 13</td>
+						</tr>
+						<tr>
+							<td>GC 15</td>
+							<td>Foz do Iguaçu</td>
+						</tr>
+						<tr>
+							<td>GC 16</td>
+							<td>Usar grupo 15</td>
+						</tr>
+						<tr>
+							<td>GC 17</td>
+							<td>Belém</td>
+						</tr>
+						<tr>
+							<td>GC 18</td>
+							<td>Manaus</td>
+						</tr>
+						<tr>
+							<td>GC 19</td>
+							<td>Usar grupo 20</td>
+						</tr>
+						<tr>
+							<td>GC 20</td>
+							<td>Teresina</td>
+						</tr>
+						<tr>
+							<td>GC 21</td>
+							<td>Salvador</td>
+						</tr>
+						<tr>
+							<td>GC 22</td>
+							<td>Usar grupo 21</td>
+						</tr>
+						<tr>
+							<td>GC 23</td>
+							<td>Usar grupo 24</td>
+						</tr>
+						<tr>
+							<td>GC 24</td>
+							<td>Cuiabá</td>
+						</tr>
+					</table>
+				</div>
+				<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+				</div>
+			</div>
+			</div>
+		</div>
+
+
+
+		<div id="sidebar-wrapper" style="background-color:white;border-right:2px solid lightgray; font-size:12px;height:100%;padding-left:10px;">
+		
+		<!-- Formulario de informacoes sobre a edificacao -->
+			<div class="col-md-12 badge badge-dark" style="margin-left:0px;padding-left:0px;margin-bottom: 10px;width:100%;"><h4 style="font-size:20px;color:white">Sobre a edificação</h4></div>
+			<div class="col-md-1"><span id="sEscondeEdif" style="font-size:25px;cursor:pointer" onclick="escondeMostraEdi()">  </span></div>
+			<div id="dEdificacao">
+				<table class="table table-hover" style="border: 0px;font-size:14px;margin-bottom:0px;">
+					<tr>
+						<td class="col-md-7">Estado</td>
+						<td class="col-md-1 text-center"><select id="cbEstado" name="cbEstado" onchange="listCities();"  style="width:100px" class="form-control">
+						</select></td>
+						<td><span id="estado-question" style="float:right;"><i class="fa fa-question-circle" style="font-size:18px;visibility: hidden;"></i></span></td>
+					</tr>
+					<tr>
+						<td class="col-md-7">Cidade <br />
+						</td>
+						<td class="col-md-1 text-center"><select id="cbCidade" name="cbCidade" onchange="getCity();" style="width:100px" class="form-control">
+						</select></td>
+						<td><span id="cidade-question" style="float:right;"><i class="fa fa-question-circle" style="font-size:18px;visibility: hidden;"></i></span></td>
+					</tr>
+				</table>
+				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#gcModal" style="font-size: 16px; width: 100%; white-space: normal; margin-top:0px; margin-bottom: 5px;padding-top:10px;padding-bottom:10px;">
+					Não encontrou sua cidade?
+				</button>
+				<table class="table table-hover" style="border: 0px;font-size:14px;">
+					<tr>
+						<td class="col-md-7">Número de pavimentos</td>
+						<td class="col-md-1 text-center">
+							<input type="text" ng-model="edificio.qtdPavimentos" cr-numeric="{vMin: 0, vMax: 50}" class="auto form-control" style="width:100px" name="p1" id="p1" placeholder="" ng-change="pavFiller();" value="">
+						</td>
+						<td><span id="pavimentos-question" style="float:right;"><i class="fa fa-question-circle" style="font-size:18px;"></i></span></td>
+					</tr>              
+					<tr>
+						<td class="col-md-7">Zonas térmicas iguais nos pavimentos intermediários?</td>
+						<td class="col-md-1 text-center">
+							<select ng-model="edificio.intermediariosIguais" ng-change="pavFiller();" style="width:100px" name="p2-5" id="p2-5" class="form-control">
+								<option value="0">Não</option>
+								<option value="1">Sim</option>
+							</select>
+						</td>
+						<td><span id="zonas-iguais-question" style="float:right;"><i class="fa fa-question-circle" style="font-size:18px;"></i></span></td>
+					</tr>
+				</table>
+			</div>
+			<div id="dPavimentos" ng-show="edificio.qtdPavimentos>0" >
+				<hr width="80%" style="color:lightgray;background-color:lightgray;border:none;height:2px;">
+				<table class="table table-hover" style="border: 0px;font-size:14px;margin-bottom:0px;">
+					<tr>
+						<td class="col-md-7" style="vertical-align:middle;">Escolha o pavimento</td>
+						<td class="col-md-1 text-center"><select ng-model="pavAtual" ng-options="pavimento.nome for pavimento in edificio"  style="width:100px" ng-change="pavChange()" name="p3" id="p3" class="form-control">
+							<option value="">Selecione um pavimento</option>
+						</select> </td>
+						<td><span id="selecione-pavimento-question" style="float:right;"><i class="fa fa-question-circle" style="font-size:18px;"></i></span></td>
+					</tr>
+				</table>
+			</div>
+
+			<hr width="80%" style="color:lightgray;background-color:lightgray;border:none;height:2px;">
+			<div class="col-md-9" ng-show="tipologiaAtual!=undefined" style="margin-left:0px;padding-left:0px;"><h4> Dados da Tipologia</h4></div>
+			<div class="col-md-1"><span id="sEscondeDadosUH" style="font-size:25px;cursor:pointer;display:none;" onclick="escondeMostraDadosUH()">  </span></div>
+			<div id="dUH" ng-show="tipologiaAtual!=undefined" >
+
+				<table class="table table-hover" style="border: 0px;font-size:14px;">
+					<tr>
+						<td class="col-md-7">Número de zonas térmicas</td>
+						<td class="col-md-1 text-center">     
+							<input type="text" ng-model="tipologiaAtual.qtdZonas" class="form-control"  style="width:100px" name="i3" id="i3" placeholder="" ng-change="zoneFiller();" value=""></td>
+
+						</td>
+						<td><span id="numero-zonas-question" style="float:right;"><i class="fa fa-question-circle" style="font-size:18px;"></i></span></td>
+					</tr>
+				</table>     
+			</div>   
+			<div id="dIlustracao" style="display:none;margin-top:10px;padding-bottom:10px;">
+				<hr width="80%" style="color:lightgray;background-color:lightgray;border:none;height:2px;">
+				<span id="textoExplicativo" style="font-size:12pt;"> <b>Exposição da cobertura</b>: Define quais as
+					características da cobertura - exposta ( com
+					contato com o exterior) ou adiabática (sob outro
+					ambiente).
+				</span>
+				<center><img id="ilustracao" name="ilustracao" src="../imgs/cobexp.png" style="margin-top:10px;" width="250px"/></center>
+			</div>
+			<div id="dResultado" ng-show="resultadoValido" style="margin-top:10px;">
+				<hr width="80%" style="color:lightgray;background-color:lightgray;border:none;height:2px;">
+				<center><br/><b> CgTTreal: {{ctt}} kWh/ano </b> <br/><b></b> <span id="sConfortoTotal"></span></center>
+				<br>
+			</div>
+			<div style="width:97%; padding-bottom: 5px;">
+			
+			<!-- Botao calcular carga termica -->
+				<button id='calc' class='btn btn-lg btn-primary' ng-click='calc()' style="width:100%;background-color:#424242;border:none">Calcular carga térmica</button> 
+			</div>
+			<!-- Botao upload de dados -->
+			<div style="width:97%; padding-bottom: 5px;">
+				<button id='upload_csv' class='btn btn-lg btn-primary' style="width:100%;background-color:#424242;border:none;margin-bottom: 10px;">Upload de dados</button>
+				<input type="file" id="upload_input" name="file" style="visibility: hidden;" onchange="angular.element(this).scope().upload_csv(this.files)"/>
+			</div>
+		</div>	
+		<div id="page-content-wrapper">
+			<div class="container-fluid" style="overflow-x:auto;">
+			
+			<!-- Formulario de informacoes das medidas das zonas termicas -->
+				<span ng-show="tipologiaAtual.zonas.length>0" zonasTable style="margin-top:13px;font-size:20px;">Zonas térmicas</span></p>
+				<br>
+				<table id="tableInputs" ng-show="tipologiaAtual.zonas.length>0" name="tableInputs" class="table table-hover" style="font-size:14px;">
+					<tr>
+						<th ng-show="tipologiaAtual.zonas.length>0" style="min-width:100px;max-width:100px;">
+						</th>
+						<th class="col-md-1 text-center" style="min-width:100px;" ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0 " ><span style="font-weight:500;font-size:16px;">{{zona.nome}}</span>
+						</th>
+						<th ng-show="tipologiaAtual.zonas.length>1" style="min-width:70px;">
+						</th>													
+						<th class="col-md-1 text-center" style="min-width:100px;" ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 " ><span style="font-weight:500;font-size:16px;">{{zona.nome}}</span>
+						</th>
+					</tr>
+					<tbody>
+						<tr>
+							<td ng-show="tipologiaAtual.zonas.length>0">
+							</td>
+							<td class="col-md-1 text-center" ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0 " >
+							</td>
+							<td ng-show="tipologiaAtual.zonas.length>1">
+								<center><span style="font-size:12px">Copiar?</span></center>
+							</td>
+							<td class="col-md-1 text-center" ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 " >
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								<span>Área</span><i class="fa fa-question-circle" style="font-size:18px;padding-left: 1.5vw;" title="Área total da zona térmica correspondente."></i>
+								<br/><i><span style="font-size:10px;">m²</span></i>
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0">
+								<input type="text" required class="auto form-control" cr-numeric="{aSep: '' , vMin: -9999999.99, vMax: 9999999.99, mDec: 2}" ng-change="fieldChangeArea()" ng-model="zona.fields['area']">
+							</td>
+							<td ng-show="tipologiaAtual.zonas.length>1">
+								<center><input type="checkbox" ng-model="tipologiaAtual.copycheck['area']" ng-change="copiarCampo('area')"></center>
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 ">
+								<input type="text" class="auto form-control" required data-a-sep="" data-a-dec="," data-v-min="-9999999.9999" data-v-max="9999999.9999" cr-numeric="{aSep: '' , vMin: -9999999.99, vMax: 9999999.99, mDec: 2}" ng-model="zona.fields['area']">
+							</td>
+						</tr>
+
+												<!-- OCUPAÇÃO DE PESSOAS COM NH-SHOW APENAS PARA TIPOLOGIA OUTROS. copiar tr de cima
+												<tr ng-show="tipologiaAtual.nome.toLowerCase() === 'outros'">
+													<td>
+														Ocupação de pessoas
+														<br/><i><span style="font-size:10px">m²</span></i>
+													</td>
+													<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0">
+														<input type="text" required class="auto form-control" cr-numeric="{aSep: '' , vMin: -9999999.99, vMax: 9999999.99, mDec: 2}" ng-change="fieldChangeOcupacaoPessoas()" ng-model="zona.ocupacao_pessoas">
+													</td>
+													<td ng-show="tipologiaAtual.zonas.length>1">
+														<center><input type="checkbox" ng-model="tipologiaAtual.copycheck['ocupacao_pessoas']" ng-change="copiarCampo('ocupacao_pessoas')"></center>
+													</td>
+													<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 ">
+														<input type="text" class="auto form-control" required data-a-sep="" data-a-dec="," data-v-min="-9999999.9999" data-v-max="9999999.9999" cr-numeric="{aSep: '' , vMin: -9999999.99, vMax: 9999999.99, mDec: 2}" ng-model="zona.ocupacao_pessoas">
+													</td>
+												</tr> -->
+						<tr ng-repeat="field in fields | orderBy:'sequencia'" ng-show="field.tipo!='especial'">
+						
+						<!-- Validacao das entradas -->
+							<td>
+								{{field.texto|getOnlyTXT}}<span is-open="true" ng-attr-title="{{field.descricao}}" style="margin-left: 25px;"><i class="fa fa-question-circle" style="font-size:18px;"></i></span>
+								<br/><i><span style="font-size:10px">{{field.texto|getOnlyMeasure}}</span></i>
+	
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0" ng-show="field.tipo=='input'">
+								<input type="text" ng-change="fieldChange(zona.fields[field.id], field.index, $event.target, field.id)" ng-blur="fieldChange(zona.fields[field.id], field.index, $event.target, field.id)" required class="auto form-control" cr-numeric="{aSep: '' , vMin: -9999999.99, vMax: 9999999.99, mDec: 2}" ng-model="zona.fields[field.id]"  ng-show="
+								(field.index!='AZI' && field.index!='aPAR' && field.index!='Upar' && field.index!='CTpar' && field.index!='FS' && field.index!='UVID' && field.index!='AOV' && field.index!='AVS' && field.index!='AHS' && field.index!='WWR' || zona.fields	['24'].value!=1) && 
+								(field.index!='Ucob' && field.index!='CTcob' && field.index!='aCOB' || zona.fields['18'].value==1) &&
+								(field.index!='FS' && field.index!='UVID' || zona.fields['11'] != 0)">
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0" ng-show="field.tipo=='select'">
+								<select class="form-control"  ng-model="zona.fields[field.id]" ng-change="fieldChange2(field.id)" ng-options="option.name for option in field.opcoes" required ng-show="
+								(field.index!='AZI' && field.index!='aPAR' && field.index!='Upar' && field.index!='CTpar' && field.index!='FS' && field.index!='UVID' && field.index!='AOV' && field.index!='AVS' && field.index!='AHS' && field.index!='WWR' || zona.fields	['24'].value!=1) && (field.index!='Ucob' && field.index!='CTcob' && field.index!='aCOB' || zona.fields['18'].value==1) &&
+								(field.index!='FS' && field.index!='UVID' || zona.fields['11'] != 0)">
+								</select>
+							</td>
+							<td ng-show="tipologiaAtual.zonas.length>1">
+								<center><input type="checkbox" ng-model="tipologiaAtual.copycheck[field.id]" ng-change="copiarCampo(field.id)"></center>
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 "  ng-show="field.tipo=='input'">
+								<input type="text" ng-blur="fieldChange(zona.fields[field.id], field.index, $event.target, field.id)" class="auto form-control" required data-a-sep="" data-a-dec="," data-v-min="-9999999.9999" data-v-max="9999999.9999" cr-numeric="{aSep: '' , vMin: -9999999.99, vMax: 9999999.99, mDec: 2}" ng-model="zona.fields[field.id]" ng-show="
+								(field.index!='AZI' && field.index!='aPAR' && field.index!='Upar' && field.index!='CTpar' && field.index!='FS' && field.index!='UVID' && field.index!='AOV' && field.index!='AVS' && field.index!='AHS' && field.index!='WWR' || zona.fields	['24'].value!=1) && (field.index!='Ucob' && field.index!='CTcob' && field.index!='aCOB' || zona.fields['18'].value==1) &&
+								(field.index!='FS' && field.index!='UVID' || zona.fields['11'] != 0)">
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 "   ng-show="field.tipo=='select'"> 
+								<select class="form-control" required  ng-model="zona.fields[field.id]" ng-change="fieldChange2(field.id)" ng-options="option.name for option in field.opcoes"  ng-show="
+								(field.index!='AZI' && field.index!='aPAR' && field.index!='Upar' && field.index!='CTpar' && field.index!='FS' && field.index!='UVID' && field.index!='AOV' && field.index!='AVS' && field.index!='AHS' && field.index!='WWR' || zona.fields['24'].value!=1) && (field.index!='Ucob' && field.index!='CTcob' && field.index!='aCOB' || zona.fields['18'].value==1) &&
+								(field.index!='FS' && field.index!='UVID' || zona.fields['11'] != 0)">
+								</select>
+							</td>
+						</tr>
+						<tr id="envoltoria-result" ng-show="resultadoValido" style="background-color:#D4D4D4;">
+						
+						<!-- Resultados dos calculos -->
+							<td style="display: flex;">
+								<i class="fa fa-building" style="order: 1;padding-left: 10px;"></i><span style="font-size:20px;order: 2;padding-left: 20px;padding-top: 5px;">  Resultado de avaliação da envoltória (método simplificado)</span>
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0">
+								<span style="font-size:20px;">Valor:</span> <br/><br/>
+							</td>							
+							<td ng-show="tipologiaAtual.zonas.length>1">
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 ">
+								<span>Valor:</span> <br/><br/>
+							</td>
+						</tr>
+						<tr ng-show="resultadoValido" style="background-color:#D4D4D4;">
+							<td>
+								<span style="font-size:12px;font-weight:bold">Densidade de carga térmica (real, por zona): </span><br/>
+								<i><span style="font-size:10px">(kWh/m².ano)</span></i><br/>
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0">
+								<b>{{zona.resfriamento}}</b> <br/><br/>
+							</td>							
+							<td ng-show="tipologiaAtual.zonas.length>1">
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 ">
+								<b>{{zona.resfriamento}}</b> <br/><br/>
+							</td>
+						</tr>
+						<tr ng-show="resultadoValido" style="background-color:#D4D4D4;">
+							<td>
+								<span style="font-size:12px;font-weight:bold">CgTRreal (por zona): </span><br/>
+								<i><span style="font-size:10px">(kWh/ano)</span></i>
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: 1 : 0">
+								<b>{{zona.ctr}}</b> <br/> 
+							</td>							
+							<td ng-show="tipologiaAtual.zonas.length>1">
+							</td>
+							<td ng-repeat="zona in tipologiaAtual.zonas | limitTo: tipologiaAtual.zonas.length : 1 ">
+								<b>{{zona.ctr}}</b> <br/> 
+							</td>
+						</tr>
+
+						<tr ng-show="resultadoValido" style="background-color:#D4D4D4;">
+							<td>
+								<!-- Botao classificacao -->
+								<button type="button" id="change-classification" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#prosseguirModal" style="width:100%;background-color:#424242;border:none">
+									Prosseguir com a classificação
+								</button>									
+								<!-- Modal classificacao -->
+								<div class="modal fade bd-example-modal-lg" id="prosseguirModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+									<div class="modal-dialog modal-lg" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+											</div>
+											<div class="modal-body">
+												<div style="display:flex; margin:0px 0px 10px 0px;">
+													<p style="margin-left: 0; order: 1;">
+														<span>Coeficiente de redução de carga térmica total anual da classificação D para a A</span>
+													</p>
+													<input type="text" id="crcgtt-da" style="margin-left: auto; order: 2;">
+												</div>
+
+												<div style="display:flex; margin:0px 0px 10px 0px;">
+													<p style="margin-left: 0; order: 1;">
+														<span>Percentual de horas ocupadas em desconforto térmico por calor (%)</span>
+													</p>
+													<input type="text" id="ehf" value="0" style="margin-left: auto; order: 2;">
+												</div>
+												
+												<table id="final-results-area" style="border: 0;width: 100%;">
+													<tr style="display:flex;">
+														<td id="reduction-percentage" style="margin-left: 0; order: 1; border:none;">
+															<span>PERCENTUAL DE REDUÇÃO DA CARGA</span><br>
+															Edificação real vs. Condição de referência 
+														</td>
+														<td id="classification-span" class="label label-default" style="margin-left: auto; order: 2;font-size: 20px;padding-top: 20px;">{{testVar}}</td>
+													</tr>
+													
+													<tr id="final-classification" style="display:flex; margin-top: 10px; border:0;background-color: white;">
+														<td style="margin-left: 0; order: 1;border:none;">CLASSIFICAÇÃO FINAL DA ENVOLTÓRIA</td>
+														<td id="classification-letter" class="label label-success" style="margin-left: auto; order: 2;font-size: 20px;padding: 20px 44px 12px 44px;"></td>
+													</tr>
+												</table>
+
+												<table id="real-and-ref-table" style="border: 0; width: 100%;">
+													<tr id="ct-real" style="display:flex; margin-top: 10px; border:0;background-color: white;">
+														<td style="margin-left: 0; order: 1;border:none;">
+															<span>CgTTreal (kWh/ano)</span>
+														</td>
+														<td id="ct-real-value" class="label label-success" style="margin-left: auto; order: 2;font-size: 20px;padding: 20px 44px 12px 44px;"></td>
+													</tr>
+
+													<tr id="ct-ref" style="display:flex; margin-top: 10px; border:0;background-color: white;">
+														<td style="margin-left: 0; order: 1;border:none;">
+															<span>CgTTref (kWh/ano)</span>
+														</td>
+														<td id="ct-ref-value" class="label label-success" style="margin-left: auto; order: 2;font-size: 20px;padding: 20px 44px 12px 44px;"></td>
+													</tr>
+
+												</table>
+
+												
+                                                                                                <button id='classificar' class='btn btn-lg btn-primary' style="width:100%;background-color:#424242;border:none;margin-bottom: 20px;margin-top: 30px;">Classificar</button>
+
+												<!-- Button trigger modal tabela classificacao -->
+												<button id="draw-graphs" type="button" class="btn btn-primary btn-lg" style="width:100%;background-color:#424242;border:none;margin-bottom: 30px;">
+													Gr�fico de resultados
+												</button>
+
+												<table id="classification-table">
+													<tr>
+														<th>Classifica��o de efici�ncia</th>
+														<th style="background-color:#00B04F;">A</th>
+														<th style="background-color:#7EDB3B;">B</th>
+														<th style="background-color:#FFF700;">C</th>
+														<th style="background-color:#F2C200;">D</th>
+														<th style="background-color:#F20000;">E</th>
+													</tr>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+
+							</td>
+						</tr>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Entradas dos valores climaticos de cada cidade -->
+	<input type="hidden" ng-model="edificio.Latitude" id="Latitude" name="Latitude" value="0"/>
+	<input type="hidden" ng-model="edificio.Altitude" id="Altitude" name="Altitude" value="0"/>
+	<input type="hidden" ng-model="edificio.Vvento" id="Vvento" name="Vvento" value="0"/>
+	<input type="hidden" ng-model="edificio.Radiacao" id="Radiacao" name="Radiacao" value="0"/>
+	<input type="hidden" ng-model="edificio.TMA" id="TMA" name="TMA" value="0"/>
+	<input type="hidden" ng-model="edificio.dpT" id="dpT" name="GHA" value="0"/>
+	<input type="hidden" ng-model="edificio.AMA" id="AMA" name="AMA" value="0"/>
+	<input type="hidden" ng-model="edificio.dpA" id="dpA" name="dpA" value="0"/>
+	<input type="hidden" id="FloorGround" name="FloorGround" value="0"/>
+	<input type="hidden" id="FloorOutdoors" name="FloorOutdoors" value="0"/>
+	<input type="hidden" id="RoofOutdoors" name="RoofOutdoors" value="0"/>
+
+	<script>
+
+		// informacoes disponiveis ao passar o mouse em ponto de interrogacao
+		$.getJSON("informacoes.json", function(json) {
+			console.log(json.absortancia); // this will show the info it in firebug console
+
+			document.getElementById('zonas-iguais-question').title = json.zona_termica_nos_pavimentos_intermediarios.conteudo;
+			document.getElementById('pavimentos-question').title = json.numero_pavimentos.conteudo;
+			document.getElementById('selecione-pavimento-question').title = json.escolha_o_pavimento.conteudo;
+			document.getElementById('numero-zonas-question').title = json.numero_de_zonas_termicas.conteudo;
+		});
+
+		// Formatacao dos formualrios
+		angular.module("rede", [])
+		.filter('getOnlyTXT', function($filter){
+			return function (txt){
+				return txt.split("(")[0];
+			}
+		})
+		.filter('getOnlyMeasure', function($filter){
+			return function (txt){
+				var retorno = txt.split("(")[1]||"";
+				if (retorno!="")
+					retorno = "("+retorno;
+				return retorno;
+			}
+		})
+		.directive('crNumeric', [function() {
+			'use strict';
+			var options = {};
+			return {
+				require: '?ngModel',
+				restrict: 'A',
+				compile: function(tElm, tAttrs) {
+					var isTextInput = tElm.is('input:text');
+					return function(scope, elm, attrs, controller) {
+						var opts = angular.extend({}, options, scope.$eval(attrs.crNumeric));
+						opts.aSep="";
+						opts.aDec=",";
+						var updateElement = function(element, newVal) {
+							if ($.isNumeric(newVal))
+								element.autoNumeric('set', newVal);
+						};
+						elm.autoNumeric(opts);
+
+						if (controller && isTextInput) {
+							scope.$watch(tAttrs.ngModel, function(current, old) {
+								controller.$render();
+							});
+							controller.$render = function() {
+								updateElement(elm, controller.$viewValue);
+							}
+							elm.on('change', function(e) {
+								scope.$apply(function() {
+									controller.$setViewValue(elm.autoNumeric('get'));
+								});
+							});
+						} else {
+							if (isTextInput) {
+								attrs.$observe('value', function(val) {
+									updateElement(elm, val);
+								});
+							}
+						}
+					}
+				} 
+			} 
+		}]);
+		
+                // Fun��o principal
+		angular.module("rede").controller("edificioCtrl", function ($scope, $http) {
+
+                        // Inicializacao dos valores para as variaveis de entrada e para rede neural
+			$scope.testVar = 0;
+			$scope.app = "Rede Comercial";
+			$scope.edificio = [];
+			$scope.fields = [];
+			$scope.fields2 = {};
+			$scope.resfriamentoTotal=0;
+			$scope.resultadoValido = false;
+			$scope.valoresPessoas = {Escritório:10 , Educacionais: 0, Hospedagem: 0, EASs: 0, Comércio:0, Mercados:0, Alimentação:0, Depósitos: 0};
+
+                        // construtor para a rede neural
+			var IndexView = function(){
+				this.showOutput = function(output){
+				}
+				this.showOutputToEdit = function(output){
+				}
+				this.setName = function(_name){
+				}
+				this.setProjeto = function(_name){
+				} 
+				this.setTipo = function(_name){
+				} 
+				this.setRevisao = function(_name){
+				}
+				this.setTraining = function(_name){
+				}
+				this.setEditMode = function(){
+				}
+				this.setId = function(_id){ }
+				this.showLayer = function(layer){
+				}
+				this.showLayers = function (layers){
+				}
+				this.showInput = function(input){
+
+					var min  = input.getMin();
+					var espacamento = (input.getEspacamento()!="0" ?  "45" : "0");
+					var tipow = "input";
+					switch(input.getTipo()){
+						case "0":
+						tipow = "input";
+						break;
+						case "1":
+						tipow= "select";
+						break;
+						case "2":
+						tipow="especial";
+						break;
+					}
+					var op = input.getOpcoes();
+					var options = [];
+					if (op!=""){
+						var op = op.split("|");
+						for (var j=0;j<op.length;j++){
+							var o11 = op[j].split("=");
+							options.push({name: o11[0], value:o11[1]});
+						}
+					} else{
+						options.push("");
+					}
+
+                                        // inicializacao do arquivo informacoes
+					$.getJSON("informacoes.json", function(json) {
+						let dsc;
+						if (typeof json[input.getId()] === "undefined") {
+							dsc = "";
+						}
+						else {
+							dsc = json[input.getId()].conteudo;
+						}
+
+						$scope.fields.push({id: input.getId(),  descricao: dsc, texto:input.getHint(), tipo: tipow, index: input.getName(), opcoes: options,  copiar:true, espaco: espacamento, min: input.getMin(), max: input.getMax(), sequencia:Number(input.getSequencia())});
+						$scope.fields2[input.getName()] ={id: input.getId(), descricao: dsc, texto:input.getHint(), tipo: tipow, index: input.getName(), opcoes: options,  copiar:true, espaco: espacamento, min: input.getMin(), max: input.getMax()};
+						
+
+					});
+					
+					$scope.$apply()
+
+				}
+			}
+                        // inicializacao para o objeto referencia
+			let $scope_referencia = {};
+
+			$scope.indexView = new IndexView();
+			$scope.ann = new ANN($scope.indexView);
+
+			// inicializacao dos valores das tipologias
+			$scope.tipologias = [
+			{nome:"Escritório", valor:10}, 
+			{nome:"Educacionais", subtipologias:[
+			{nome: "Educação infantil",nomeParcial:"Infantil", valor:2.5},  
+			{nome: "Educação Ensino Fundamental e Médio", nomeParcial:"Ensino Fundamental/Médio", valor: 1.5}, 
+			{nome:"Ensino Superior", nomeParcial:"Ensino Superior", valor:1.5}
+			]}, 
+			{nome:"Hospedagem", subtipologias:[
+			{nomeParcial:"Pequenos", nome:"Hospedagem P", valor: 16.1}, 
+			{nomeParcial:"Médios e Grandes", nome:"Hospedagem M/G", valor:20.0}
+			]}, 
+			{nome:"EASs", subtipologias: [
+			{nome:"EAS",nomeParcial:"EAS, exceto hospital", valor: 5.0} 
+			]}, 
+			{nome:"Comércio", subtipologias:[
+			{nomeParcial:"Pequenas", nome:"Comércio pequeno", valor: 5},
+			{nomeParcial: "Grandes", nome:"Comércio grande ", valor: 5} ,  
+			{nomeParcial:"Shoppings", nome:"Shoppings", valor: 5}
+			]},
+			{nome:"Mercados", valor:5}, 
+			{nome:"Alimentação", valor:5}, 
+			{nome:"Outros", valor:10}
+			];
+			
+			// inicializacao da classe Ann
+			var loadAnn = function(){
+				$.ajax({
+					type: 'POST',
+					url: '../callback.php',
+					async: true,
+					data: {func: "load", campo: 215},
+					success: function(response) {
+						AnnLoader(response, $scope.ann);
+						$scope.ann.showInputs();
+					}             
+				}); 
+			}
+			
+			// Criacao de execao para informar erro no calculo
+			$scope.errado = {
+				"border": "1px solid red"
+			}
+			
+			// Metodo para copiar campos para cada zona
+			$scope.copiarCampo = function(_id, _value){
+				var valor=0;
+				if ($scope.tipologiaAtual==undefined || $scope.tipologiaAtual.zonas==undefined){
+					return 0;
+				}
+				for (var zonas =0; zonas<$scope.tipologiaAtual.zonas.length;zonas++){
+					var zona = $scope.tipologiaAtual.zonas[zonas];
+					if (zonas==0){
+                        if (_id.toLowerCase() === 'tipo_fachada') {
+							valor=zona.tipo_fachada;
+						} else
+						if (_id.toLowerCase() === 'ocupacao_pessoas') {
+							valor=zona.ocupacao_pessoas;
+						} else {
+							valor=zona.fields[_id];
+						}
+					} else{
+
+						if (zona.fields==undefined){
+							zona.fields={};
+						}
+						if ($scope.tipologiaAtual.copycheck[_id]){
+							if (_id.toLowerCase() === "tipo_fachada") {
+								zona.tipo_fachada = valor;
+							} else
+							if (_id.toLowerCase() === "ocupacao_pessoas") {
+								zona.ocupacao_pessoas = valor;
+							} else {
+								zona.fields[_id]=valor;
+							}
+						} else {
+							zona.fields[_id]="";
+						}
+					}
+				}
+			}
+
+// Metodo para clonar as entradas de um objeto para outro
+$scope.clone_scope = function (old_scope) {
+				new_scope ={};
+				new_scope['ann'] = angular.copy(old_scope['ann']);
+				new_scope['app'] = angular.copy(old_scope['app']);
+				new_scope['calc'] = angular.copy(old_scope['calc']);
+				new_scope['calc_ref'] = angular.copy(old_scope['calc_ref']);
+				new_scope['classify'] = angular.copy(old_scope['classify']);
+				new_scope['collect_results'] = angular.copy(old_scope['collect_results']);
+				new_scope['copiarCampo'] = angular.copy(old_scope['copiarCampo']);
+				new_scope['ctt'] = angular.copy(old_scope['ctt']);
+				new_scope['edificio'] = angular.copy(old_scope['edificio']);
+				new_scope['errado'] = angular.copy(old_scope['errado']);
+				new_scope['​fieldChange'] = angular.copy(old_scope['​fieldChange']);
+				new_scope['fieldChange2'] = angular.copy(old_scope['fieldChange2']);
+				new_scope['fieldChangeArea'] = angular.copy(old_scope['fieldChangeArea']);
+				new_scope['fields'] = angular.copy(old_scope['fields']);
+				new_scope['fields2'] = angular.copy(old_scope['fields2']);
+				new_scope['generate_divs_for_paths'] = angular.copy(old_scope['generate_divs_for_paths']);
+				new_scope['indexView'] = angular.copy(old_scope['indexView']);
+				new_scope['novaTipologia'] = angular.copy(old_scope['novaTipologia']);
+				new_scope['pavChange'] = angular.copy(old_scope['pavChange']);
+				new_scope['pavFiller'] = angular.copy(old_scope['pavFiller']);
+				new_scope['plot_graph'] = angular.copy(old_scope['plot_graph']);
+				new_scope['plot_pavs_graph'] = angular.copy(old_scope['plot_pavs_graph']);
+				new_scope['removeTipologia'] = angular.copy(old_scope['removeTipologia']);
+				new_scope['resfriamentoTotal'] = angular.copy(old_scope['resfriamentoTotal']);
+				new_scope['resultadoValido'] = angular.copy(old_scope['resultadoValido']);
+				new_scope['save_csv'] = angular.copy(old_scope['save_csv']);
+				new_scope['setTipologiaAtual'] = angular.copy(old_scope['setTipologiaAtual']);
+				new_scope['tipologiaNotInArray'] = angular.copy(old_scope['tipologiaNotInArray']);
+				new_scope['tipologias'] = angular.copy(old_scope['tipologias']);
+				new_scope['upload_csv'] = angular.copy(old_scope['upload_csv']);
+				new_scope['valoresPessoas'] = angular.copy(old_scope['valoresPessoas']);
+				new_scope['zoneFiller'] = angular.copy(old_scope['zoneFiller']);
+
+				return old_scope;
+}
+
+
+    // Metodo para coletar os resultados dos calculos das entradas e de referencia
+    $scope.collect_results = function () {
+        // para cada pavimento
+        resultados_pav = [];
+        resultados_pav.ctt_real = $scope.ctt;
+        resultados_pav.ctt_ref = $scope_referencia.ctt;
+        console.log("DEBUG REAL!!!!!!!" + $scope.ctt);
+        resultados_pav.resfri_real = $scope.resfriamentoTotal;
+        resultados_pav.resfri_ref = $scope_referencia.resfriamentoTotal;
+		
+        for (i=0; i < $scope.edificio.length;i++) {
+            var pav = $scope.edificio[i];
+            resultados_pav.push({tipologias: []});
+            // tipologia
+            for (j=0; j < pav.tipologias.length;j++) {
+                var tipo_atual = pav.tipologias[j];
+                resultados_pav[resultados_pav.length-1].tipologias.push({
+                    real: {
+                        ctr: [],
+                        resfriamento: []
+                    },
+                    referencia: {
+                        ctr: [],
+                        resfriamento: []
+                    }
+                });
+                
+                for (let k = 0; k < tipo_atual.zonas.length; k++) {
+                    var zona = tipo_atual.zonas[k];
+                    last_tipo_position = resultados_pav[resultados_pav.length-1].tipologias.length-1;
+                    
+                    // real 
+                    resultados_pav[resultados_pav.length-1].tipologias[last_tipo_position].real.ctr.push(zona.ctr);
+                    resultados_pav[resultados_pav.length-1].tipologias[last_tipo_position].real.resfriamento.push(zona.resfriamento);
+
+                    // referencia 
+                    resultados_pav[resultados_pav.length-1].tipologias[last_tipo_position].referencia.ctr.push(
+                        $scope_referencia.edificio[i].tipologias[j].zonas[k].ctr
+                    );
+                    resultados_pav[resultados_pav.length-1].tipologias[last_tipo_position].referencia.resfriamento.push(
+                        $scope_referencia.edificio[i].tipologias[j].zonas[k].resfriamento
+                    );
+
+                }
+            }
+        }
+        return resultados_pav;
+    }
+
+	$scope.master_crcgtt_da = 0;
+
+	$scope.letter_b;
+	$scope.letter_c;
+	$scope.letter_d;
+	$scope.letter_e;
+
+    // Metodo para calcular classificacao de eficiencia energica
+    $scope.classify = function (fhdesc, crgttda, resultados_pav) {
+        //cgtt_real = resultados_pav.ctt_real;
+        cgtt_real = resultados_pav.ctt_real;
+        cgtt_ref = resultados_pav.ctt_ref;
+
+        if (cgtt_ref === 0 && crgttda === 0) {
+            alert("Ops! Algo de errado aconteceu.\n Seu valor de CRgTT_D-A ou sua carga térmica é: 0")
+        } else {
+            i = (cgtt_ref * crgttda)/3;
+        }
+
+        if (cgtt_ref - cgtt_real === 0) {
+            alert("Sua carga térmica real e a de referência são iguais");
+            i = 0;
+        } else {
+            i = (cgtt_ref * crgttda)/3;
+        }
+
+        redcep = ((cgtt_ref - cgtt_real)/cgtt_ref)*100;
+
+        let classificacao = {
+            perc_reduc_carga: redcep,
+            coef_intervalo_classes: i,
+            resultados: resultados_pav
+			};
+		
+        return classificacao;
+    }
+
+        // Eventos do botao classificar
+	$scope.percentageReduction = '0 %';
+        primeiraClassificacao = true;
+
+	document.getElementById("classificar").addEventListener("click", () => {
+		
+                $scope.save_csv();
+
+		if(primeiraClassificacao == true) {
+
+		$scope.calc_ref();
+
+		let temp_results = $scope.collect_results();
+		let temp_ehf = document.getElementById("ehf").value.replaceAll(',', '.');
+		let temp_crgttda = document.getElementById("crcgtt-da").value.replaceAll(',', '.');
+		console.log(temp_results);
+		let temp_classification = $scope.classify(temp_ehf, temp_crgttda, temp_results);
+
+		console.log($scope.ctt);
+
+                //Resultados da classificacao
+		document.getElementById("classification-span").innerHTML = temp_classification['perc_reduc_carga'].toFixed() + ' %';
+		
+		let temp_ctt_real = temp_classification['resultados'].ctt_real;
+		let temp_ctt_ref = temp_classification['resultados'].ctt_ref;
+		let temp_i = temp_classification['coef_intervalo_classes'];
+
+		let temp_efficiency;
+		let temp_bg;
+
+		let upper_b = Math.round(temp_ctt_ref - 3 * temp_i);
+		let upper_c = Math.round(temp_ctt_ref - 2 * temp_i);
+		let upper_d = Math.round(temp_ctt_ref - temp_i);
+		let upper_e = Math.round(temp_ctt_ref);
+
+		// Calculos para cada categoria de classificacao
+		if (temp_ctt_real <= temp_ctt_ref - 3 * temp_i) {
+			temp_efficiency = 'A';
+			temp_bg = '#00B04F';
+		}
+		else if (temp_ctt_real > temp_ctt_ref - 3 * temp_i && temp_ctt_real <= temp_ctt_ref - 2 * temp_i) {
+			temp_efficiency = 'B';
+			temp_bg = '#7EDB3B';
+		}
+		else if (temp_ctt_real > temp_ctt_ref - 2 * temp_i && temp_ctt_real <= temp_ctt_ref - temp_i) {
+			temp_efficiency = 'C';
+			temp_bg = '#FFF700';
+		}
+		else if (temp_ctt_real > temp_ctt_ref - temp_i && temp_ctt_real <= temp_ctt_ref) {
+			temp_efficiency = 'D';
+			temp_bg = '#F2C200';
+		}
+		else {
+			temp_efficiency = 'E';
+			temp_bg = '#F20000';
+		}
+
+		console.log(temp_efficiency);
+
+		document.getElementById("classification-letter").innerHTML = temp_efficiency;
+		document.getElementById("classification-letter").style.backgroundColor = temp_bg;
+		document.getElementById("ct-real-value").innerHTML = temp_ctt_real;
+
+
+		document.getElementById("ct-ref-value").innerHTML = temp_ctt_ref;
+
+		document.getElementById("final-results-area").style.visibility = "visible";
+		document.getElementById("real-and-ref-table").style.visibility = "visible";
+		
+		primeiraClassificacao = false;
+		}
+	});
+
+			// Carregar resultados no CSV
+			$scope.upload_csv = function (changeEvent) {
+			var edificio_csv = {};
+			edificio_csv[0] = {tipologias: []};
+			var df = {};
+			var file = changeEvent[0];
+			var reader = new FileReader();
+			reader.readAsText(file);
+			reader.onload = function(changeEvent) {
+			var data = reader.result;
+				data = data.split('\n');
+			for (i in data) { data[i] = data[i].split(',') }
+				data = data[0].map((_, colIndex) => data.map(row => row[colIndex]));
+				// limite é o número de variaveis do csv
+				for (let i =0; i< data[0].length; i++) {
+				df[data[0][i]] = new Array()
+				for (let j =1; j < data.length; j++) {
+					df[data[0][i]].push(data[j][i].replace("\r",""));
+				}
+			}
+                        // Validar dados e limites no CSV
+			function validador_csv(data) {
+			conv_max_min = {
+				DEN_POTEN_EQUIPS: {min: 4,max: 40},
+				DEN_POTEN_ILUM: {min: 4,max: 40},
+				FAT_SOL_VIDRO: {min:0.21, max:0.87},
+				TRANS_TERM_VIDRO: {min:1.9, max:5.7},
+				ABS_SOL_COB: {min: 0.2,max: 0.8},
+				ABS_SOL_PAREDE: {min: 0.2,max: 0.8},
+				PE_DIR: {min: 2.6,max: 6.6},
+				ANG_HOR_SOMBR: {min: 0,max: 80},
+				ANG_VERT_SOMBR: {min: 0,max: 90},
+				ANG_OBSTR_VIZINHA: {min: 0,max: 80},
+				HORAS_OCUP: {min: 8,max: 24},
+				TRANS_TERM_COB: {min: 0.51,max: 5.07},
+				TRANS_TERM_PAREDE: {min: 0.5,max: 4.4},
+				CAPAC_TERM_COB: {min: 0.22,max: 450},
+				CAPAC_TERM_PAREDE: {min: 0.22,max: 450} 
+			};
+			
+			for (k =5; k < data[0].length;k++) {
+				var variavel = data[0][k];
+				if ( Object.keys(conv_max_min).indexOf(variavel) > -1 ) {
+					for (i = 1; i < data.length; i++) {
+						if (data[i][k].replace("\r","").length !== 0) {
+						if (data[i][k] < conv_max_min[variavel].min) {
+							// console.log(data[i]);
+							alert("Erro: A "+variavel+"="+data[i][k]+" na coluna "+(i+1)+" está abaixo do mínimo.\n \
+							O mínimo é: "+conv_max_min[variavel].min+" e\n \
+							o máximo é: "+conv_max_min[variavel].max);
+						}
+						if (data[i][k] > conv_max_min[variavel].max) {
+							// console.log(data[i]);
+							alert("Erro: A "+variavel+"="+data[i][k]+" na coluna "+(i+1)+" está acima do máximo.\n \
+							O mínimo é: "+conv_max_min[variavel].min+" e\n \
+							o máximo é: "+conv_max_min[variavel].max);
+						     }
+						}
+					}
+				}
+			}
+
+			}
+			validador_csv(data);
+
+			var tipols = [...new Set(df['TIPOLOGIA'])];
+			conv_tip = {};
+
+                        // Conversao de variaveis do objeto para ids com valores inteiros
+			conv_id_tip = {
+				AREA: "area",
+				CONTATO_SOLO: 16,
+				ZONA_PILOTIS: 17,
+				COBERTURA_EXP: 18,
+				ISOLAMENTO_SOLO: 23,
+				TIPO_ZONA: 24,
+				ORI_SOLAR: 1,
+				DEN_POTEN_EQUIPS: 2,
+				DEN_POTEN_ILUM: 3,
+				FAT_SOL_VIDRO: 4,
+				TRANS_TERM_VIDRO: 7,
+				ABS_SOL_COB: 8,
+				ABS_SOL_PAREDE: 9,
+				PE_DIR: 10,
+				ABERT_FACHADA: 11,
+				ANG_HOR_SOMBR: 12,
+				ANG_VERT_SOMBR: 13,
+				ANG_OBSTR_VIZINHA: 14,
+				HORAS_OCUP: 15,
+				TRANS_TERM_COB: 19,
+				TRANS_TERM_PAREDE: 20,
+				CAPAC_TERM_COB: 21,
+				CAPAC_TERM_PAREDE: 22 
+			};
+
+                        // Conversao da variavel orientacao solar para um objeto com nome e valor
+			conv_orientacao_solar = {
+				"N": {name:"N", value: "0" },
+				"NE": {name:"NE", value: "45" },
+				"L": {name:"L", value: "90" },
+				"SE": {name:"SE", value: "135" },
+				"S": {name:"S", value: "180" },
+				"SO": {name:"SO", value: "225" },
+				"O": {name:"O", value: "270" },
+				"NO": {name:"NO", value: "315" }
+			};
+
+                        // Conversao da variavel tipo de zona para um objeto com nome e valor
+			var conv_tipo_zona = {
+				"interna": {name: "interna", value: 1 },
+				"perimetral": {name: "perimetral", value: 2 }
+			};
+			
+			// Conversao para transformar variaveis de sim e nao em objetos esperados por $scope.calc
+			var conv_sim_nao = {
+					1: {"name": "Sim","value": "1"},
+					0: {"name": "Não","value": "0"}
+				};
+
+                        // // Conversao da variavel tipologia para um objeto com nome e valor (valor este sendo ocupacao de pessoas)
+			var conv_tipologia_valor = {
+				"Escritório": {valor:10},
+				"Educação infantil": {valor:2.5},
+				"Educação Ensino Fundamental e Médio": {valor:1.5252},
+				"Ensino Superior": {valor:1.5},
+				"Hospedagem P": {valor:16.666},
+				"Hospedagem M/G": {valor:20.0},
+				"Clínicas": {valor:5.0},
+				"EASs": {valor:20},
+				"Comércio pequeno": {valor:5},
+				"Comércio grande ": {valor:5},
+				"Shoppings": {valor:5},
+				"Mercados": {valor:5},
+				"Alimentação": {valor:5},
+				"Outros": {valor:10}
+			};
+
+                        // Conversao da variavel cidade para ids com valores inteiros
+			let conv_cidade_value = {
+				"Aracaju": 1,			"Belém": 2,				"Belo Horizonte": 3,
+				"Boa Vista": 4,			"Brasilia": 5,			"Campo Grande": 6,
+				"Chuí": 7,				"Cuiabá": 8,			"Curitiba": 9,
+				"Florianópolis": 10,	"Fortaleza": 11,		"Foz do Iguaçu": 12,
+				"Goiânia": 13,			"João Pessoa": 15,		"Macapá": 16,
+				"Maceió": 17,			"Manaus": 18,			"Natal": 19,
+				"Niterói": 20,			"Palmas": 21,			"Porto Alegre": 22,
+				"Porto Velho": 23,		"Recife": 24,			"Rio Branco": 25,
+				"Rio de Janeiro": 26,	"Salvador": 27,			"Santa Maria": 28,
+				"São Luís": 29,			"São Paulo": 30,		"Teresina": 31,
+				"Urubici": 32,			"Vitória": 33,
+			}
+
+			// definindo inputs relacionados a cidade
+			async function sleep(ms) {
+				return new Promise(resolve => setTimeout(resolve, ms));
+			}
+			async function set_city() {
+				document.getElementById("cbEstado").value = df['UF'][0];
+				listCities();
+
+				while (document.getElementById('cbCidade').options.length <= 0) {
+					await sleep(250);
+				}
+
+				document.getElementById("cbCidade").value = String(conv_cidade_value[df['CIDADE'][0]]);
+				getCity();
+			}
+			set_city();
+			
+
+			// criando tipologias vazias porém com nomes e criando um conversor de nome para index
+			for (i in tipols) {
+				edificio_csv[0].tipologias.push({nome: tipols[i], zonas: [], valor: conv_tipologia_valor[tipols[i]].valor});
+				conv_tip[tipols[i]] = i;
+			}
+			
+
+			// iterando sobre sobre as linhas do csv
+			for (i in df['TIPOLOGIA']) { 
+				tip = df['TIPOLOGIA'][i];
+				// Acessando 
+				var zona = edificio_csv[0].tipologias[conv_tip[tip]].zonas;
+				zona.push({fields:{}}); 
+				// iterando sobre cada variavel e atribuindo a zona atual
+				for (k =5; k < data[0].length; k++) {
+					var valor_atual = df[data[0][k]][i];
+					// se a zona tiver o valor da variavel atual vazia então ignore
+					if (valor_atual !== "") {
+						// verificando se o id da variavel eh uma das variaveis de "sim ou nao"
+						if ([16,17,18,23].indexOf(conv_id_tip[data[0][k]]) > -1) {
+						zona[zona.length-1].fields[conv_id_tip[data[0][k]]] = conv_sim_nao[valor_atual];
+						} else
+						if (1 === conv_id_tip[data[0][k]]) { // caso orientacao solar
+						zona[zona.length-1].fields[conv_id_tip[data[0][k]]] = conv_orientacao_solar[valor_atual];
+						} else 
+						if (24 === conv_id_tip[data[0][k]]) { // caso tipo zona
+						zona[zona.length-1].fields[conv_id_tip[data[0][k]]] = conv_tipo_zona[valor_atual.toLowerCase()];
+						} else {
+						// caso contrario trate como uma variavel normal
+						zona[zona.length-1].fields[conv_id_tip[data[0][k]]] = valor_atual;
+						}
+						
+					}
+				}
+				// registrando a linha em que a zona atual se encontra, assim
+				// ao plotar o grafico eh possivel identificar o pavimento
+				zona[zona.length-1].linha_zona = i;  
+				zona[zona.length-1].nome = "Zona "+i;  
+			// console.log(edificio_csv);
+			// console.log(df);
+			// console.log(data);
+			}
+			Object.assign($scope.edificio, edificio_csv);
+
+			document.getElementById('calc').click();
+
+			}
+
+
+			} // Fim do upload
+
+			$scope.calc_ref = function () {
+
+	// salvando edificio atual  
+        const $scope_backup = Object.assign({}, $scope);
+	$scope_backup['clone_scope'] = angular.copy($scope.clone_scope);
+ 
+         console.log("DEBUG BACKUP" + $scope_backup.ctt);
+
+	// pegando json para referencias
+	let referencias = {
+  "todos": {
+    "ISOLAMENTO_SOLO": {name:"Não", value:0},
+    "FAT_SOL_VIDRO": "0.82",
+    "TRANS_TERM_VIDRO": "5.7",
+    "ABS_SOL_COB": "0.8",
+    "ABS_SOL_PAREDE": "0.5",
+    "ANG_HOR_SOMBR": "0",
+    "ANG_VERT_SOMBR": "0",
+    "TRANS_TERM_COB": "2.06",
+    "TRANS_TERM_PAREDE": "2.39",
+    "CAPAC_TERM_COB": "233",
+    "CAPAC_TERM_PAREDE": "150"
+  },
+  "Escritório": {
+    "DEN_POTEN_ILUM": "14.1",
+    "ABERT_FACHADA": "0.5",
+    "HORAS_OCUP": "10"
+  },
+  "educacionais": {
+    "ABERT_FACHADA": "0.4",
+    "DEN_POTEN_ILUM": "15.5",
+    "HORAS_OCUP": "8"
+  },
+  "Hospedagem": {
+    "ABERT_FACHADA": "0.45",
+    "DEN_POTEN_ILUM": "15.7",
+    "HORAS_OCUP": "24"
+  },
+  "Clínicas": {
+    "ABERT_FACHADA": "0.14",
+    "DEN_POTEN_ILUM": "15",
+    "HORAS_OCUP": "12"
+  },
+  "Comércio pequeno": {
+    "ABERT_FACHADA": {"principal": "0.6", "demais": "0.05" },
+    "DEN_POTEN_ILUM": "21.7",
+    "HORAS_OCUP": "12"
+  },
+  "Comércio grande": {
+    "ABERT_FACHADA": {"principal": "0.6", "demais": "0.05" },
+    "DEN_POTEN_ILUM": "18.3",
+    "HORAS_OCUP": "12"
+  },
+  "Mercados":  {
+    "ABERT_FACHADA": {"principal": "0.6", "demais": "0.1" },
+    "DEN_POTEN_ILUM": "16.3",
+    "HORAS_OCUP": "12"
+  },
+  "Alimentação": {
+    "ABERT_FACHADA": "0.4",
+    "DEN_POTEN_ILUM": "13.9",
+    "HORAS_OCUP": "8"
+  },
+  "Outros": {
+    "ABERT_FACHADA": "0.6",
+    "DEN_POTEN_ILUM": "15",
+    "HORAS_OCUP": "12"
+  }
+};
+	// Conversao de variaveis do objeto para ids com valores inteiros em referencias
+
+	conv_id_tip = {
+				AREA: "area",
+				CONTATO_SOLO: 16,
+				ZONA_PILOTIS: 17,
+				COBERTURA_EXP: 18,
+				ISOLAMENTO_SOLO: 23,
+				TIPO_ZONA: 24,
+				ORI_SOLAR: 1,
+				DEN_POTEN_EQUIPS: 2,
+				DEN_POTEN_ILUM: 3,
+				FAT_SOL_VIDRO: 4,
+				TRANS_TERM_VIDRO: 7,
+				ABS_SOL_COB: 8,
+				ABS_SOL_PAREDE: 9,
+				PE_DIR: 10,
+				ABERT_FACHADA: 11,
+				ANG_HOR_SOMBR: 12,
+				ANG_VERT_SOMBR: 13,
+				ANG_OBSTR_VIZINHA: 14,
+				HORAS_OCUP: 15,
+				TRANS_TERM_COB: 19,
+				TRANS_TERM_PAREDE: 20,
+				CAPAC_TERM_COB: 21,
+				CAPAC_TERM_PAREDE: 22 
+			};
+
+        // Colocar o os valores de referencia em cada tipologia
+	$scope.resultadoValido = false;
+	for (pav_id in $scope.edificio) {
+		let pav = $scope.edificio[pav_id];
+		for (tip_id in pav.tipologias) {
+			let tipo = pav.tipologias[tip_id];
+			for (zona_id in tipo.zonas) {
+				let zona = tipo.zonas[zona_id];
+				delete zona.ctr;
+				delete zona.resfriamento;
+				for (valor_fixo in referencias['todos']) {
+					// substritui pelo valor em referencias['todos']
+					zona.fields[ conv_id_tip[valor_fixo] ] = referencias['todos'][valor_fixo];
+				}
+				switch (tipo.nome.toLowerCase()) {
+					case "escritório":
+						for (valor_tipologia in referencias["Escritório"]) {
+							zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Escritório"][valor_tipologia];
+						}
+					break;
+
+					case "educação infantil":
+					case "educação ensino fundamental e médio":
+					case "ensino superior":
+						for (valor_tipologia in referencias["educacionais"]) {
+							zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["educacionais"][valor_tipologia];
+						}
+					break;
+
+					case "hospedagem m/g":
+					case "hospedagem p":
+						for (valor_tipologia in referencias["Hospedagem"]) {
+							zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Hospedagem"][valor_tipologia];
+						}					
+					break;
+
+					case "clínicas":
+						for (valor_tipologia in referencias["Clínicas"]) {
+							zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Clínicas"][valor_tipologia];
+						}
+					break;	
+
+					case "comércio pequeno":
+					for (valor_tipologia in referencias["Comércio pequeno"]) {
+                        // caso nao haja subdivisao
+							if (typeof referencias["Comércio pequeno"][valor_tipologia].principal === 'undefined' ) {
+							    zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio pequeno"][valor_tipologia];
+
+                                // caso haja
+							} else {
+								// caso seja fachada principal
+								if (zona.tipo_fachada === "1") {
+									zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio pequeno"][valor_tipologia].principal;
+
+								// caso seja demais fachadads
+								} else {
+									zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio pequeno"][valor_tipologia].demais;
+					            }
+                            }
+						}
+						// zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio pequeno"][valor_tipologia];
+
+					break;
+
+					case "comércio grande":
+					case "shoppings":
+						for (valor_tipologia in referencias["Comércio grande"]) {
+                            // caso nao haja subdivisao
+							if (typeof referencias["Comércio grande"][valor_tipologia].principal === 'undefined' ) {
+                                zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio grande"][valor_tipologia];
+
+                                // caso haja
+							} else {
+								// caso seja fachada principal
+								if (zona.tipo_fachada === "1") {
+									zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio grande"][valor_tipologia].principal;
+
+								// caso seja demais fachadads
+								} else {
+									zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio grande"][valor_tipologia].demais;
+								}
+							}
+							// zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Comércio grande"][valor_tipologia];
+						}
+					break;			
+
+					case "mercados":
+						for (valor_tipologia in referencias["Mercados"]) {
+                            // caso nao haja subdivisao
+							if (typeof referencias["Mercados"][valor_tipologia].principal === 'undefined' ) {
+                                zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Mercados"][valor_tipologia];
+                                
+							// caso haja
+							} else {
+								// caso seja fachada principal
+								if (zona.tipo_fachada === "1") {
+									zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Mercados"][valor_tipologia].principal;
+
+								// caso seja demais fachadads
+								} else {
+									zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Mercados"][valor_tipologia].demais;
+								}
+							}
+							
+							// zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Mercados"][valor_tipologia];
+						}
+					break;
+
+					case "alimentação":
+						for (valor_tipologia in referencias["Alimentação"]) {
+							zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Alimentação"][valor_tipologia];
+						}
+					break;
+					
+					case "outros":
+						for (valor_tipologia in referencias["Outros"]) {
+							zona.fields[ conv_id_tip[valor_tipologia] ] = referencias["Outros"][valor_tipologia];
+						}
+					break;
+				}
+			}
+		}
+	}
+	
+	// calculando referencia
+
+        console.log("DEBUG CARGA REAL!!!!!!" + $scope.ctt);
+        //variaveis para instanciar o ctt de entrada e de referencia
+        var cttRealInicial = $scope.ctt;
+        var cttCalculado = 0;
+
+
+	// calculo usando valores de referencia
+	$scope.calc();
+	// colocar os resultados em scope_referencia
+	$scope_referencia = Object.assign({},$scope);
+	$scope_referencia['clone_scope'] = angular.copy($scope.clone_scope);
+	// obter os valores de entrada novamente ao clonar scope_backup
+	$scope = Object.assign({}, $scope_backup);
+	$scope['clone_scope'] = angular.copy($scope_backup.clone_scope);
+	// calcular o scope de entrada
+	$scope.calc();
+
+        cttCalculado = $scope.ctt;
+
+        console.log("DEBUG CTT SCOPE!!!!!!" + $scope.ctt);
+        console.log("DEBUG CTT REFERENCIA!!!!!!" + $scope_referencia.ctt);
+
+        $scope_referencia.ctt = cttCalculado;
+        $scope.ctt = cttRealInicial;
+
+        console.log("DEBUG CTT INICIAL!!!!!!" + cttRealInicial);
+        console.log("DEBUG CTT CALCULADO!!!!!!" + cttCalculado);
+        // fim do calculo de referencia
+}
+
+                        //Calculo das zonas
+			$scope.calc = function(){
+				$scope.resfriamentoTotal=0;
+				$scope.ctt=0;
+				for (var pavs=0;pavs<$scope.edificio.length;pavs++){
+					var pav = $scope.edificio[pavs];
+
+					//execoes para falta de preenchimento
+					if (pav.tipologias.length==0){
+						alert("faltou preencher a(s) tipologia(s) do pavimento "+(pav.nome));
+						return 0;				
+					}
+					for (var tipos=0;tipos<pav.tipologias.length;tipos++){
+						var tipologia = pav.tipologias[tipos];
+						if (tipologia.zonas==undefined){
+							alert("faltou preencher a(s) zonas(s) da tipologia "+tipologia.nome+" do pavimento "+(pav.nome));
+							return 0;				
+						}
+						for (var zonas=0;zonas<tipologia.zonas.length;zonas++){
+							zona = tipologia.zonas[zonas];
+							if (zona.fields==undefined){
+								alert("faltou preencher a zona "+ (zonas+1)+" da tipologia "+tipologia.nome+" do pavimento "+(pav.nome));
+								return 0;
+							} else {
+								
+								var idZint = $scope.fields2['Zint'].id;
+								var idRoof = $scope.fields2['RoofOutdoors'].id;
+								var idWWR = $scope.fields2['WWR'].id;
+								var teste_it = 0;
+								var idDPE = $scope.fields2['DPE'].id;
+								for (var i=0;i<$scope.fields.length;i++){
+									var fieldId = $scope.fields[i].id;
+									var valorNeuron = 0;
+									//caso zona interna
+									if (zona.fields[idZint].value==1){
+										if ($scope.fields[i].index=='AZI' || $scope.fields[i].index=='aPAR'  ||  $scope.fields[i].index=='Upar' || $scope.fields[i].index=='CTpar' || $scope.fields[i].index=='FS' || $scope.fields[i].index=='UVID' || $scope.fields[i].index=='AOV' || $scope.fields[i].index=='AVS' || $scope.fields[i].index=='AHS' || $scope.fields[i].index=='WWR' || $scope.fields[i].index=='INF'){
+											valorNeuron=0;
+
+											console.log($scope.fields[i].index+" "+		valorNeuron+" "+$scope.ann.getNeuron(parseInt(fieldId)).getName());
+											$scope.ann.getNeuron(parseFloat(fieldId)).setValue(valorNeuron);
+											continue;
+										}
+  
+									}else if ($scope.fields[i] == undefined){
+										alert("faltou preencher o campo "+$scope.fields[i].index+" da zona " + (zonas+1)+" da tipologia "+tipologia.nome+" do pavimento "+(pav.nome));
+										return 0;
+									}
+									//caso cobertura
+									if(zona.fields[idRoof].value==0){
+										if($scope.fields[i].index=='CTcob' || $scope.fields[i].index=='Ucob'|| $scope.fields[i].index=='aCOB'){
+											valorNeuron=0
+											console.log($scope.fields[i].index+" "+		valorNeuron+" "+$scope.ann.getNeuron(parseInt(fieldId)).getName());
+											$scope.ann.getNeuron(parseInt(fieldId)).setValue(valorNeuron);
+											continue;
+										}
+									} else if ($scope.fields[i] == undefined){
+										alert("faltou preencher o campo "+$scope.fields[i].index+" da zona " + (zonas+1)+" da tipologia "+tipologia.nome+" do pavimento "+(pav.nome));
+										return 0;
+									}
+                                                                        //caso abertura da fachada
+									if ($scope.fields[i].index == "FS"|| $scope.fields[i].index == "UVID") {
+										if (zona.fields[idWWR] == 0) {
+											valorNeuron = 0;
+											console.log($scope.fields[i].index+" "+		valorNeuron+" "+$scope.ann.getNeuron(parseInt(fieldId)).getName());
+											$scope.ann.getNeuron(parseInt(fieldId)).setValue(valorNeuron);
+											continue;
+										}
+									} else if ($scope.fields[i] == undefined){
+										alert("faltou preencher o campo "+$scope.fields[i].index+" da zona " + (zonas+1)+" da tipologia "+tipologia.nome+" do pavimento "+(pav.nome));
+										return 0;
+									}	
+									//variaveis das cidades
+									if ($scope.fields[i].index=="Latitude" || $scope.fields[i].index=="Altitude" || $scope.fields[i].index=="Vvento" || $scope.fields[i].index=="Radiacao" || $scope.fields[i].index=="TMA"  || $scope.fields[i].index=="dpT" || $scope.fields[i].index=="AMA" || $scope.fields[i].index=="dpA" || $scope.fields[i].index=="GHR"  || $scope.fields[i].index=="GHA"){
+										if ($scope.edificio[$scope.fields[i].index]!=""){
+											valorNeuron=parseFloat(document.getElementById($scope.fields[i].index).value);
+										} else{
+											alert("Você precisa escolher uma cidade e um estado");
+											return 0;
+										}	
+									// caso infiltracao
+									} else if ($scope.fields[i].index=="INF"){
+										valorNeuron=0.5;
+									//caso ocupacao de pessoas
+									} else if ($scope.fields[i].index=="PESSOAS"){
+										valorNeuron=1/tipologia.valor;
+                                                                                valorNeuron=(Math.floor(valorNeuron * 100) / 100);
+									}else {
+										if (zona.fields[fieldId].value==undefined){
+											valorNeuron = parseFloat(String(zona.fields[fieldId]).replace(",","."));
+										} else{
+											valorNeuron = parseFloat(String(zona.fields[fieldId].value).replace(",","."));
+										}
+									}
+									console.log($scope.fields[i].index+" "+valorNeuron+" "+$scope.ann.getNeuron(parseInt(fieldId)).getName());
+									$scope.ann.getNeuron(parseInt(fieldId)).setValue(valorNeuron);
+								}
+								console.log("--------");
+							}
+							// treinamento e formatacao do resultado
+							var valor = $scope.ann.calcLayers().get(0).getValue("R");
+							console.log("valor: " + valor);
+							valor = Math.pow(10, valor);
+
+                                                        console.log("DEBUG:valor:"+valor);
+							 console.log("DEBUG:resfriamento:"+ $scope.resfriamentoTotal);
+							$scope.resfriamentoTotal+=valor;
+							// Somatorio de pavimentos intermediários iguais seja feito corretamente
+							if (($scope.edificio.intermediariosIguais==1) && (pav.nome == "intermediários")) {
+								$scope.ctt+= ($scope.edificio.qtdPavimentos-2)*Number(valor*parseFloat(String(zona.fields["area"]).replace(",",".")));
+							} else {
+								$scope.ctt+=Number(valor*parseFloat(String(zona.fields["area"]).replace(",",".")));
+							}
+
+							zona.ctr = Number(valor*parseFloat(String(zona.fields["area"]).replace(",","."))).toFixed(2);
+							zona.resfriamento=Number(valor).toFixed(2);
+                                                        console.log("DEBUG:valor:"+Number(valor) + "-------------" + valor);
+
+						}
+					}
+				}
+                                // Arredondamento de cada resultado para duas casas decimais
+				$scope.resfriamentoTotal=Number($scope.resfriamentoTotal).toFixed(2);
+				$scope.ctt=Number($scope.ctt).toFixed(2);
+				console.log($scope.ctt);
+				$scope.resultadoValido=true;
+
+                                //funcoes para evitar acesso simultaneo aos valores dos calculos
+				async function sleep(ms) {
+					return new Promise(resolve => setTimeout(resolve, ms));
+				}
+
+				async function randomFunc() {
+					await sleep(1000);
+					document.getElementById("envoltoria-result").scrollIntoView();
+				}
+				randomFunc();
+			}
+
+// Metodo para salvar o objeto em um CSV
+$scope.save_csv = function() {
+var inter_iguais = Number($scope.edificio.intermediariosIguais);
+var qtdPav = $scope.edificio.qtdPavimentos;
+var qtdPavIntermediarios = qtdPav -2;
+let resultadoPronto = false;
+let conv_value_cidade = {
+				1: "Aracaju",			
+				2: "Belém",				
+				3: "Belo Horizonte",
+				4: "Boa Vista",			
+				5: "Brasilia",			
+				6: "Campo Grande",
+				7: "Chuí",				
+				8: "Cuiabá",			
+				9: "Curitiba",
+				10: "Florianópolis",	
+				11: "Fortaleza",		
+				12: "Foz do Iguaçu",
+				13: "Goiânia",			
+				15: "João Pessoa",		
+				16: "Macapá",
+				17: "Maceió",			
+				18: "Manaus",			
+				19: "Natal",
+				20: "Niterói",			
+				21: "Palmas",			
+				22: "Porto Alegre",
+				23: "Porto Velho",		
+				24: "Recife",			
+				25: "Rio Branco",
+				26: "Rio de Janeiro",	
+				27: "Salvador",			
+				28: "Santa Maria",
+				29: "São Luís",			
+				30: "São Paulo",		
+				31: "Teresina",
+				32: "Urubici",			
+				33: "Vitória"
+			}
+
+// converter os ids do objeto para as posicoes correspondentes no CSV
+var conv_id_position = {
+    area: 0,
+    16: 1,
+    17: 2,
+    18: 3,
+    23: 5,
+    24: 6,
+    1: 7,
+    2: 8,
+    3: 9,
+    4: 10,
+    7: 11,
+    8: 12,
+    9: 13,
+    10: 14,
+    11: 15,
+    12: 16,
+    13: 17,
+    14: 18,
+    15: 19,
+    19: 20,
+    20: 21,
+    21: 22,
+    22: 23 
+ };
+
+// Nomes dos campos
+ var headers = [
+	"UF",
+	"CIDADE",
+    "PAVIMENTO",
+    "TIPOLOGIA",
+    "ZONAS",
+    "AREA",
+    "CONTATO_SOLO",
+    "ZONA_PILOTIS",
+    "COBERTURA_EXP",
+    "ISOLAMENTO_SOLO",
+    "TIPO_ZONA",
+    "ORI_SOLAR",
+    "DEN_POTEN_EQUIPS",
+    "DEN_POTEN_ILUM",
+    "FAT_SOL_VIDRO",
+    "TRANS_TERM_VIDRO",
+    "ABS_SOL_COB",
+    "ABS_SOL_PAREDE",
+    "PE_DIR",
+    "ABERT_FACHADA",
+    "ANG_HOR_SOMBR",
+    "ANG_VERT_SOMBR",
+    "ANG_OBSTR_VIZINHA",
+    "HORAS_OCUP",
+    "TRANS_TERM_COB",
+    "TRANS_TERM_PAREDE",
+    "CAPAC_TERM_COB",
+    "CAPAC_TERM_PAREDE"]
+
+//Preenchimento dos campos
+var zonas_csv = [];
+for (i=0; i < $scope.edificio.length;i++) {
+
+    
+    var pav = $scope.edificio[i];
+    // tipologia
+    var nova_zona = Array(27);
+    for (j=0; j < pav.tipologias.length;j++) {
+        console.log(pav);
+        var tipo_atual = pav.tipologias[j]; 
+        
+        for (let k = 0; k < tipo_atual.zonas.length; k++) {
+            var zona = tipo_atual.zonas[k];
+            console.log(zona);
+
+            var nome_pvt = "Pvt"+i;
+            if (pav.nome === "Cobertura") {
+                nome_pvt = "Pvt"+(qtdPav-1);
+            } 
+			nova_zona = [];
+            var nome_tipo = tipo_atual.nome;
+
+			nova_zona[0] = window.estado;
+			nova_zona[1] = conv_value_cidade[window.cidade];
+            nova_zona[2] = nome_pvt;
+            nova_zona[3] = nome_tipo;
+            nova_zona[4] = zona.nome;
+			
+            
+            for ([id, valor] of Object.entries(zona.fields)) {
+                var var_valor = valor;
+                if (typeof(valor) === "object") {
+					if (valor.name === "Sim" || valor.name === "Não") {
+						var_valor = valor.value;
+					} else {
+						var_valor = valor.name;						
+					}
+                }
+                //achar linha de acordo com id da entrada
+                nova_zona[conv_id_position[id]+5] = var_valor;
+            }
+			// nova_zona.splice(7,1);
+			nova_zona.splice(9,1);
+			if (typeof zona.ctr !== "undefined") {
+				resultadoPronto = true;
+				nova_zona.push(zona.ctr);
+				nova_zona.push(zona.resfriamento);
+			}
+            zonas_csv.push(nova_zona);
+        }
+    }
+    if (inter_iguais === 1) {
+        if (pav.nome === "intermediários") {
+            for (let intermed = 1; intermed < qtdPavIntermediarios+1; intermed++) {
+                // replica as zonas do pavimento intermediario preenchido
+                for (j = 1; j < zonas_csv.length;j++) {
+                    nova_zona_inter = zonas_csv[j];
+                    nova_zona_inter[0] = "Pvt "+(j+1);
+                    zonas_csv.push(nova_zona);  
+                }
+            }
+            
+        } 
+    }
+}
+if (resultadoPronto) {
+	headers.push('CARGA TERMICA');
+	headers.push('RESFRIAMENTO');
+}
+
+// criando o csv baseado nas zonas e nomes de variaveis
+csv = "";
+for (i =0; i < headers.length;i++) {
+    csv += headers[i]+",";
+    for (let j = 0; j < zonas_csv.length; j++) {
+
+        if (typeof zonas_csv[j][i] === "undefined") {
+                    csv += ",";
+        } else {
+            csv += zonas_csv[j][i]+",";
+        }
+    }
+    csv += "\n";
+}
+console.log(csv);
+var hiddenElement = document.createElement('a');
+hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+hiddenElement.target = '_blank';
+hiddenElement.download = 'simulacao_envoltoria_'+window.estado+'-'+conv_value_cidade[window.cidade]+'.csv';
+hiddenElement.click();
+}
+
+                        // Instanciar de forma estatica horas ocupadas
+			$scope.fieldChange = function(_input, _index, _event, _id){
+				if ($scope.tipologiaAtual.copycheck!=undefined)
+					$scope.tipologiaAtual.copycheck[_id]=false;
+				if (_id == 15 || _index.toLowerCase() === "hocc") {
+						let conv_tipologia_hocc = {
+							"escritório": { valor:10},
+							"educação infantil": { valor:8 },
+							"educação ensino fundamental e médio": { valor:8 },
+							"ensino superior": { valor:8},
+							"hospedagem p": { valor: 24},
+							"hospedagem m/g": { valor:24},
+							"clínicas": { valor: 12},
+							"eass": { valor: 20},
+							"comércio pequeno": { valor: 12},
+							"comércio grande ": { valor: 12},
+							"shoppings": { valor: 12},
+							"mercados": { valor:12},
+							"alimentação": { valor:8},
+							"outros": { valor:12}
+						};
+						_input = conv_tipologia_hocc[$scope.tipologiaAtual.nome.toLowerCase()].valor;
+						_event.value = conv_tipologia_hocc[$scope.tipologiaAtual.nome.toLowerCase()].valor;
+						
+						for (let i = 0; i < $scope.tipologiaAtual.zonas.length; i++) {
+							$scope.tipologiaAtual.zonas[i].fields['15'] = conv_tipologia_hocc[$scope.tipologiaAtual.nome.toLowerCase()].valor;
+						}
+						_event.style['background-color']= "rgb(206, 206, 206)";
+				}
+
+                        // Formatar e informar erro nas entradas
+				$scope.resultadoValido=false;
+				if (_input=="" || _event.value=="")
+					return 0;
+				var min = $scope.fields2[_index].min; 
+				var max = $scope.fields2[_index].max; 
+				_input2 = parseFloat(String(_input).replace(",","."));
+
+				if (min != max){
+					if (_input2<min){
+						_event.value="";
+						_event.style.border="1px solid red";
+						alert("Valor do campo inválido, o mínimo é: "+min+".\nCASO HAJA OUTRAS ZONAS COM VALOR COPIADO, alterá-los manualmente.");
+						return 0;
+					}
+					if (_input2>max){
+						_event.value="";
+						_event.style.border="1px solid red";
+						alert("Valor do campo inválido, o máximo é: "+max+".\nCASO HAJA OUTRAS ZONAS COM VALOR COPIADO, alterá-los manualmente.");
+						return 0;
+					}
+				}
+				_event.style.border="";
+			}
+                        // Instanciar de forma estatica tipologias
+			$scope.pavChange = function(){
+				$scope.tipologiaAtual=undefined;
+				if ($scope.pavAtual==undefined)
+					return null;
+				if ($scope.pavAtual.tipologias.length>0)
+					$scope.tipologiaAtual=$scope.pavAtual.tipologias[0];
+				if (!$scope.$$phase)
+					$scope.$apply();
+
+			}	
+                        // Verificar erro na posicao da variavel tipologia
+			$scope.tipologiaNotInArray = function(_tipologia){
+				var achou = false;
+				if ($scope.pavAtual==undefined)
+					return false;
+				for (var i=0;i<$scope.pavAtual.tipologias.length;i++){
+					if ($scope.pavAtual.tipologias[i].nome==_tipologia.nome){
+						achou=true;
+					}						
+				}
+				return !achou;
+			}
+                        // Instanciar nova tipologia
+			$scope.novaTipologia = function(_tipologia){
+				var novaTipo = angular.copy(_tipologia);
+				$scope.tipologiaAtual = novaTipo;
+				$scope.pavAtual.tipologias.push(novaTipo);
+			}
+                        // Instanciar tipologia atual
+			$scope.setTipologiaAtual = function(_tipologia){
+				$scope.tipologiaAtual = _tipologia;
+			}
+                        // Remover tipologia
+			$scope.removeTipologia = function (_tipologia){
+				var index = $scope.pavAtual.tipologias.indexOf(_tipologia);
+				$scope.pavAtual.tipologias.splice(index, 1);     
+			}
+                        // Preencher pavimentos
+			$scope.pavFiller = function() {
+				var quant = $scope.edificio.qtdPavimentos;
+				var iguais = $scope.edificio.intermediariosIguais;
+				$scope.edificio = [];
+				$scope.edificio.qtdPavimentos = quant;
+				$scope.edificio.intermediariosIguais = iguais;
+				for (var i=0;i<$scope.edificio.qtdPavimentos;i++){
+					if (i==0)
+						$scope.edificio.push({nome:"Térreo", tipologias:[]});
+					else if (i==$scope.edificio.qtdPavimentos-1)
+						$scope.edificio.push({nome:"Cobertura", tipologias:[]});
+					else if ($scope.edificio.intermediariosIguais==1){ 
+						if (i==1){
+							$scope.edificio.push({nome:"intermediários", tipologias:[]});
+						}
+					}
+					else
+						$scope.edificio.push({nome:"Pav "+(i+1), tipologias:[]});
+				}
+			}
+
+			$scope.zoneFiller = function(){
+				var nome = $scope.tipologiaAtual.nome;
+				var quant = $scope.tipologiaAtual.qtdZonas;
+				$scope.tipologiaAtual.zonas=[];
+				for (var i=0;i<$scope.tipologiaAtual.qtdZonas;i++){
+					$scope.tipologiaAtual.zonas.push({nome: "Zona "+(i+1)});
+				}
+			}
+			loadAnn();
+
+		});
+	</script>
+	
+	<input type="hidden" ng-model="edificio.Latitude" id="Latitude" name="Latitude" value="0"/>
+	<input type="hidden" ng-model="edificio.Altitude" id="Altitude" name="Altitude" value="0"/>
+	<input type="hidden" ng-model="edificio.Vvento" id="Vvento" name="Vvento" value="0"/>
+	<input type="hidden" ng-model="edificio.Radiacao" id="Radiacao" name="Radiacao" value="0"/>
+	<input type="hidden" ng-model="edificio.TMA" id="TMA" name="TMA" value="0"/>
+	<input type="hidden" ng-model="edificio.dpT" id="dpT" name="GHA" value="0"/>
+	<input type="hidden" ng-model="edificio.AMA" id="AMA" name="AMA" value="0"/>
+	<input type="hidden" ng-model="edificio.dpA" id="dpA" name="dpA" value="0"/>
+	<input type="hidden" id="FloorGround" name="FloorGround" value="0"/>
+	<input type="hidden" id="FloorOutdoors" name="FloorOutdoors" value="0"/>
+	<input type="hidden" id="RoofOutdoors" name="RoofOutdoors" value="0"/>
+	<script>
+
+                // Buscar cidades e seus respectivos valores
+		function getCity(){
+			$.ajax({
+				type: 'POST',
+				url: '../callback.php',
+				async: true,
+				data: {func: "getCity", cidade: document.getElementById("cbCidade").value},
+				success: function(response) {
+					var resultArray = JSON.parse(response);
+					
+					// linha abaixo feita em 2020
+					window.cidade = document.getElementById("cbCidade").value;
+
+					for (x in response){
+						if (resultArray[x]!=undefined){
+							document.getElementById("Latitude").value = resultArray[x]['latitude'].replace(",",".");   
+							document.getElementById("Altitude").value = resultArray[x]['altitude'].replace(",","."); 
+							document.getElementById("Vvento").value = resultArray[x]['vvento'].replace(",",".");   
+							document.getElementById("Radiacao").value = resultArray[x]['radiacao'].replace(",",".");   
+							document.getElementById("TMA").value = resultArray[x]['tma'].replace(",",".");   
+							document.getElementById("dpT").value = resultArray[x]['dpt'].replace(",","."); 
+							document.getElementById("AMA").value = resultArray[x]['ama'].replace(",",".");   
+							document.getElementById("dpA").value = resultArray[x]['dpa'].replace(",",".");   
+						}
+					}
+				}             
+			});
+		}
+                // Listar cidades
+		function listCities(){
+			removeOptions(document.getElementById("cbCidade"));
+			$.ajax({
+				type: 'POST',
+				url: '../callback.php',
+				async: true,
+				data: {func: "listCities", uf: document.getElementById("cbEstado").value},
+				success: function(response) {
+					var sel = $("#cbCidade");
+					var resultArray = JSON.parse(response);
+
+					// linha abaixo feita em 2020
+					// $scope.edificio.estado = document.getElementById("cbEstado").value;
+					window.estado = document.getElementById("cbEstado").value;
+
+					for (x in response){
+						if (resultArray[x]!=undefined){   
+							sel.append("<option value='"+resultArray[x]['id']+"'>"+resultArray[x]['cidade']+"</option>");
+						}
+					}
+					document.getElementById("cbCidade").selectedIndex=-1;
+				}             
+			});
+		}
+
+                // M�todos para garanti a seguranca
+		$(document).ready(function() { 
+			$.ajax({
+				type: 'POST',
+				url: '../callback.php',
+				async: true,
+				data: {func: "listUFs"},
+				success: function(response) {
+					var sel = $("#cbEstado");
+					var resultArray = JSON.parse(response);
+					for (x in response){
+						if (resultArray[x]!=undefined){   
+							sel.append("<option value='"+resultArray[x]['estado']+"'>"+resultArray[x]['estado']+"</option>");
+						}
+					}
+					document.getElementById("cbEstado").selectedIndex=-1;
+				}
+			});
+		});
+		$('#sidebar-wrapper').affix({
+			offset: { 
+				top:80
+			}
+		});
+
+		function removeOptions(selectbox){
+			for(var i = selectbox.options.length - 1 ; i >= 0 ; i--){
+				selectbox.remove(i);
+			}
+		}
+
+		const uploadCSV = document.getElementById('upload_csv');
+		const uploadInput = document.getElementById('upload_input');
+
+		uploadCSV.addEventListener('click', function() {
+			uploadInput.click();
+		});
+
+	</script>
+</body>
+</html>
+							
